@@ -166,7 +166,8 @@ Base URL: `https://stock-screener.on99.app`
 ### Total Score
 
 ```
-Total Score = (Fundamental Score × 0.60) + (Technical Score × 0.40)
+Raw Total Score = (Fundamental Score × 0.60) + (Technical Score × 0.40)
+Total Score = Raw Total Score 拉 curve 到 0-100
 ```
 
 ### Fundamental Score

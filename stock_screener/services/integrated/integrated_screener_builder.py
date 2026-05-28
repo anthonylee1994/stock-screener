@@ -3,6 +3,8 @@ import time
 
 import pandas as pd
 
+from stock_screener.services.common.score_curver import curve_score
+from stock_screener.services.common.series_normalizer import to_numeric_series
 from stock_screener.services.fundamental.fundamental_score_calculator import SCORE_COLUMN as FUNDAMENTAL_SCORE_COLUMN
 from stock_screener.services.fundamental.fundamental_screener_service import fundamental_screener_service
 from stock_screener.services.technical.technical_score_calculator import SCORE_COLUMN as TECHNICAL_SCORE_COLUMN
@@ -99,8 +101,12 @@ class IntegratedScreenerBuilder:
             scored_data[SCORE_COLUMN] = pd.NA
             return scored_data
 
-        score = (scored_data[FUNDAMENTAL_SCORE_COLUMN] * FUNDAMENTAL_SCORE_WEIGHT) + (
-            scored_data[TECHNICAL_SCORE_COLUMN] * TECHNICAL_SCORE_WEIGHT
-        )
-        scored_data[SCORE_COLUMN] = score.round(2)
+        fundamental_score = to_numeric_series(scored_data[FUNDAMENTAL_SCORE_COLUMN])
+        technical_score = to_numeric_series(scored_data[TECHNICAL_SCORE_COLUMN])
+        valid_score_mask = fundamental_score.notna() & technical_score.notna()
+        score = (
+            (fundamental_score * FUNDAMENTAL_SCORE_WEIGHT)
+            + (technical_score * TECHNICAL_SCORE_WEIGHT)
+        ).where(valid_score_mask)
+        scored_data[SCORE_COLUMN] = curve_score(score).round(2)
         return scored_data

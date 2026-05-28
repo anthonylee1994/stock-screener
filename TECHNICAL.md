@@ -114,10 +114,11 @@ Technical Score =
 完整 screener 會再將技術面分數同基本面分數合成 `Total Score`：
 
 ```text
-Total Score = (Fundamental Score * 0.60) + (Technical Score * 0.40)
+Raw Total Score = (Fundamental Score * 0.60) + (Technical Score * 0.40)
+Total Score = 將 Raw Total Score 拉 curve 到 0-100
 ```
 
-即係 `Technical Score` 係總分其中 40%。如果技術面資料下載失敗、資料不足，或者計唔到技術分，完整資料仍然可能保留基本面欄位，但 `Total Score` 會係空值。
+即係 `Technical Score` 係 raw total 其中 40%，再將 raw total 拉到 0-100。最高 raw total 會變 100，最低會變 0。如果技術面資料下載失敗、資料不足，或者計唔到技術分，完整資料仍然可能保留基本面欄位，但 `Total Score` 會係空值。
 
 ---
 

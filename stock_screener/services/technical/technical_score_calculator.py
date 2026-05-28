@@ -1,5 +1,6 @@
 import pandas as pd
 
+from stock_screener.services.common.score_curver import curve_score
 from stock_screener.services.common.percentile_scorer import percentile_score
 from stock_screener.utils.screener_rules import TECHNICAL_SCORE_COLUMN
 
@@ -40,7 +41,7 @@ class TechnicalScoreCalculator:
             ) / 2
             score_parts.append(scored_data[score_column] * weight)
 
-        scored_data[SCORE_COLUMN] = sum(score_parts)
+        scored_data[SCORE_COLUMN] = curve_score(sum(score_parts))
 
         score_columns = [*TERM_SCORES, SCORE_COLUMN]
         scored_data[score_columns] = scored_data[score_columns].round(2)

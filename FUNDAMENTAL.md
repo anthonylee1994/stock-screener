@@ -4,20 +4,20 @@
 
 ### 核心邏輯：基本面相對排名
 
-系統唔係用固定門檻話「ROE 一定要大過 15%」先合格，而係將每隻股票同你今次股票池入面其他股票比較，計出 0-100 分嘅百分位排名。
+系統唔係用固定門檻話「ROE 一定要大過 15%」先合格，而係將每隻股票同同板塊股票比較，計出 0-100 分嘅百分位排名。如果某個板塊某個指標有效樣本少過 5 隻，就 fallback 用全股票池排名。
 
 流程：
 
 1. 先由 fundamental screener 攞基本面資料
 2. 清走冇 ticker 嘅無效資料
 3. 將 market cap、估值、增長、回報率、負債等欄位轉成數字
-4. 每個可評分欄位都同成個股票池做百分位排名
+4. 每個可評分欄位優先喺同 `Sector` 入面做百分位排名；板塊樣本不足先用全股票池排名
 5. 按權重加總成 `Fundamental Score`
 6. 最後按 `Fundamental Score` 由高至低排序
 
 **例子：**
 
-> 如果某隻股票嘅 PEG 喺股票池入面最低，PEG Score 會接近 100；如果 ROE 係最高，ROE Score 亦會接近 100。總分就係將呢啲分數按權重加埋。
+> 如果某隻科技股嘅 PEG 喺科技股入面最低，PEG Score 會接近 100；如果 ROE 喺同板塊最高，ROE Score 亦會接近 100。總分就係將呢啲分數按權重加埋。
 
 ---
 
@@ -47,33 +47,33 @@
 
 | 指標分數              | 比重    |
 | --------------------- | ------- |
+| `ROIC Score`          | **20%** |
 | `EPS Past 5Y Score`   | **18%** |
-| `ROIC Score`          | **15%** |
-| `ROE Score`           | **12%** |
-| `PEG Score`           | **12%** |
-| `Sales Past 5Y Score` | **10%** |
-| `Profit Margin Score` | **8%**  |
-| `P/FCF Score`         | **8%**  |
-| `Market Cap Score`    | **5%**  |
+| `PEG Score`           | **17%** |
+| `ROE Score`           | **13%** |
+| `Sales Past 5Y Score` | **8%**  |
+| `P/FCF Score`         | **7%**  |
+| `Profit Margin Score` | **6%**  |
 | `Forward P/E Score`   | **5%**  |
-| `Debt/Equity Score`   | **5%**  |
-| `P/S Score`           | **2%**  |
+| `P/S Score`           | **3%**  |
+| `Debt/Equity Score`   | **3%**  |
+| `Market Cap Score`    | **0%**  |
 
 公式：
 
 ```text
 Fundamental Score =
-  (EPS Past 5Y Score * 0.18)
-+ (ROIC Score * 0.15)
-+ (ROE Score * 0.12)
-+ (PEG Score * 0.12)
-+ (Sales Past 5Y Score * 0.10)
-+ (Profit Margin Score * 0.08)
-+ (P/FCF Score * 0.08)
-+ (Market Cap Score * 0.05)
+  (ROIC Score * 0.20)
++ (EPS Past 5Y Score * 0.18)
++ (PEG Score * 0.17)
++ (ROE Score * 0.13)
++ (Sales Past 5Y Score * 0.08)
++ (P/FCF Score * 0.07)
++ (Profit Margin Score * 0.06)
 + (Forward P/E Score * 0.05)
-+ (Debt/Equity Score * 0.05)
-+ (P/S Score * 0.02)
++ (P/S Score * 0.03)
++ (Debt/Equity Score * 0.03)
++ (Market Cap Score * 0.00)
 ```
 
 即係目前評分最重視：
@@ -81,7 +81,12 @@ Fundamental Score =
 1. 盈利同收入增長
 2. ROIC / ROE / Profit Margin 呢類營運質素
 3. PEG、P/FCF、Forward P/E 呢類估值
-4. 公司規模同負債風險
+4. 負債風險；市值只顯示排名分數，唔再直接推高基本面總分
+
+另外有兩條核心資料 guardrail：
+
+- `ROIC`、`EPS Past 5Y`、`PEG` 三個核心指標入面，至少要有 2 個有效數值；如果少過 2 個，`Fundamental Score` 最高只會係 60 分。
+- `ROIC Score`、`EPS Past 5Y Score`、`PEG Score` 三個核心分數平均要至少 70；如果低過 70，`Fundamental Score` 最高只會係 75 分。
 
 ---
 
@@ -104,7 +109,8 @@ Fundamental Score =
 完整 screener 會再將基本面分數同技術面分數合成 `Total Score`：
 
 ```text
-Total Score = (Fundamental Score * 0.60) + (Technical Score * 0.40)
+Raw Total Score = (Fundamental Score * 0.60) + (Technical Score * 0.40)
+Total Score = 將 Raw Total Score 拉 curve 到 0-100
 ```
 
 如果冇技術面分數，系統會保留基本面資料，但 `Total Score` 會係空值。
@@ -113,7 +119,7 @@ Total Score = (Fundamental Score * 0.60) + (Technical Score * 0.40)
 
 ## 使用注意事項
 
-1. **股票池好重要**：分數完全受你揀咗邊批股票影響。同一隻股票放喺大型科技股池同細價股池，排名可以差好遠。
+1. **板塊同股票池都好重要**：分數優先係板塊內相對排名；如果板塊樣本不足，先會退回全股票池排名。同一隻股票喺唔同篩選條件下，排名可以差好遠。
 2. **缺失資料會輸蝕**：某個指標冇數據會計 0 分，資料唔齊嘅股票總分可能偏低。
 3. **估值平唔等於抵買**：PEG、P/E、P/S 低可能係市場低估，亦可能係公司前景轉差。
 4. **增長係歷史數據**：`EPS Past 5Y` 同 `Sales Past 5Y` 反映過去，唔保證未來繼續增長。

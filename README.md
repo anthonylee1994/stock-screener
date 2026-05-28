@@ -233,8 +233,9 @@ HTTP status: `401`
 Fundamental metric scores are percentile scores from `0` to `100` within the
 screened stock pool:
 
-- Higher is better: `Market Cap`, `EPS Past 5Y`, `ROE`, `ROIC`
-- Lower is better: `Forward P/E`, `PEG`, `P/FCF`
+- Higher is better: `Market Cap`, `EPS Past 5Y`, `Sales Past 5Y`, `ROE`,
+  `ROIC`, `Profit Margin`
+- Lower is better: `Forward P/E`, `PEG`, `P/S`, `P/FCF`, `Debt/Equity`
 
 `Fundamental Score` uses percentage weights from `SCORE_WEIGHTS` in
 `stock_screener/services/fundamental/fundamental_score_calculator.py`.
@@ -248,7 +249,8 @@ Technical Score = Long Term Score * 0.6 + Mid Term Score * 0.3 + Short Term Scor
 Integrated scoring:
 
 ```text
-Total Score = Fundamental Score * 0.6 + Technical Score * 0.4
+Raw Total Score = Fundamental Score * 0.6 + Technical Score * 0.4
+Total Score = min-max curve Raw Total Score to 0-100
 ```
 
 Rows without a total score are filtered out before response sorting.
