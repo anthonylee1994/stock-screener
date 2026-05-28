@@ -63,6 +63,19 @@ def test_format_record_calculates_change_and_falls_back_to_quote_fields():
     assert record["change_percent"] == 10.0
 
 
+def test_format_record_uses_quote_change_when_price_change_percent_is_missing():
+    row = pd.Series(
+        {
+            "Ticker": "MSFT",
+            "Quote Change": 4.0,
+        }
+    )
+
+    record = format_record(row)
+
+    assert record["change"] == 4.0
+
+
 def test_format_record_returns_none_for_missing_values():
     row = pd.Series({"Ticker": "AAPL", "Price": pd.NA})
 
@@ -71,3 +84,17 @@ def test_format_record_returns_none_for_missing_values():
     assert record["price"] is None
     assert record["change"] is None
     assert record["total_score"] is None
+
+
+def test_format_record_returns_none_for_missing_change_sources():
+    row = pd.Series(
+        {
+            "Ticker": "AAPL",
+            "Change": pd.NA,
+            "Quote Change": pd.NA,
+        }
+    )
+
+    record = format_record(row)
+
+    assert record["change"] is None

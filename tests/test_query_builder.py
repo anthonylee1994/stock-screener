@@ -34,6 +34,24 @@ def test_build_screener_query_includes_filters_search_sort_and_pagination():
     ]
 
 
+def test_build_screener_count_query_uses_specific_search_column_and_open_market_cap():
+    builder = StockScreenerQueryBuilder(placeholder="%s")
+
+    query, params = builder.build_screener_count_query(
+        sector="All",
+        market_cap="+Mid",
+        search=" msft\\ ",
+        search_column="Company",
+    )
+
+    assert '"Sector" = %s' not in query
+    assert '"Market Cap" >= %s' in query
+    assert '"Market Cap" < %s' not in query
+    assert 'LOWER("Company") LIKE %s ESCAPE' in query
+    assert 'LOWER("Ticker") LIKE %s ESCAPE' not in query
+    assert params == [2_000_000_000, "%msft\\\\%"]
+
+
 def test_build_ticker_screener_query_normalizes_and_ignores_blank_tickers():
     builder = StockScreenerQueryBuilder(placeholder="%s")
 
@@ -63,6 +81,11 @@ def test_build_ticker_screener_query_returns_empty_query_for_no_tickers():
 
     assert query.endswith("WHERE 0")
     assert params == []
+
+    count_query, count_params = builder.build_ticker_screener_count_query(tickers=None)
+
+    assert count_query == "SELECT 0 AS count"
+    assert count_params == []
 
 
 def test_normalize_sort_column_falls_back_to_market_cap():

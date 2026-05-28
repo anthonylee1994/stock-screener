@@ -47,6 +47,41 @@ def test_fundamental_data_normalizer_rounds_non_score_metrics():
     assert normalized.loc[0, "Debt/Equity"] == 0.876
 
 
+def test_fundamental_data_normalizer_returns_empty_data_unchanged():
+    normalizer = FundamentalDataNormalizer()
+    data = pd.DataFrame()
+
+    result = normalizer.normalize(data)
+
+    assert result is data
+
+
+def test_fundamental_data_normalizer_remove_invalid_rows_handles_empty_and_missing_ticker():
+    normalizer = FundamentalDataNormalizer()
+    empty_data = pd.DataFrame()
+    data_without_ticker = pd.DataFrame([{"Company": "Apple"}])
+
+    assert normalizer.remove_invalid_rows(empty_data) is empty_data
+    assert normalizer.remove_invalid_rows(data_without_ticker).to_dict("records") == [
+        {"Company": "Apple"}
+    ]
+
+
+def test_fundamental_data_normalizer_remove_invalid_rows_strips_blank_tickers():
+    normalizer = FundamentalDataNormalizer()
+    data = pd.DataFrame(
+        [
+            {"Ticker": "AAPL"},
+            {"Ticker": " "},
+            {"Ticker": None},
+        ]
+    )
+
+    result = normalizer.remove_invalid_rows(data)
+
+    assert result.to_dict("records") == [{"Ticker": "AAPL"}]
+
+
 def test_fundamental_score_calculator_scores_and_sorts_weighted_metrics():
     calculator = FundamentalScoreCalculator()
     data = pd.DataFrame(
@@ -96,6 +131,15 @@ def test_fundamental_score_calculator_handles_no_scoreable_columns():
     assert scored.to_dict("records") == [
         {"Ticker": "AAPL", "Fundamental Score": 0.0}
     ]
+
+
+def test_fundamental_score_calculator_returns_empty_data_unchanged():
+    calculator = FundamentalScoreCalculator()
+    data = pd.DataFrame()
+
+    result = calculator.add_score(data, ["Ticker"])
+
+    assert result is data
 
 
 def test_technical_score_calculator_scores_percentiles_and_sorts():

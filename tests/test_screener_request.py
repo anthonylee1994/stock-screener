@@ -39,3 +39,22 @@ def test_screener_request_maps_market_cap_sort_alias():
     request = ScreenerRequest({"order": "market_cap"})
 
     assert request.order == MARKET_CAP_COLUMN
+
+
+def test_screener_request_parse_int_applies_minimum_without_maximum():
+    request = ScreenerRequest({})
+
+    assert request.parse_int("5", default=0, minimum=10) == 10
+
+
+def test_screener_request_parse_bool_returns_default_for_none():
+    request = ScreenerRequest({})
+
+    assert request.parse_bool(None, default=True) is True
+
+
+def test_screener_request_parse_bool_returns_bool_values_directly():
+    request = ScreenerRequest({})
+
+    assert request.parse_bool(True, default=False) is True
+    assert request.parse_bool(False, default=True) is False
