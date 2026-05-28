@@ -60,7 +60,8 @@ class FundamentalDataNormalizer:
         normalized_data = normalized_data.rename(columns=COLUMN_ALIASES)
         for column in NUMERIC_COLUMNS:
             if column in normalized_data.columns:
-                normalized_data[column] = to_numeric_series(normalized_data[column])
+                normalized_data[column] = to_numeric_series(
+                    normalized_data[column])
         for column in PERCENT_COLUMNS:
             if column in normalized_data.columns:
                 normalized_data[column] = (

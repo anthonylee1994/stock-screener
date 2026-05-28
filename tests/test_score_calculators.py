@@ -184,7 +184,8 @@ def test_fundamental_score_calculator_scores_metrics_relative_to_sector():
         ]
     )
 
-    scored = calculator.add_score(data, ["Ticker", "ROIC Score", "Fundamental Score"])
+    scored = calculator.add_score(
+        data, ["Ticker", "ROIC Score", "Fundamental Score"])
     score_by_ticker = scored.set_index("Ticker")["ROIC Score"].to_dict()
 
     assert score_by_ticker["TECH_TOP"] == 100.0

@@ -109,7 +109,8 @@ class ChunkingTechnicalPriceClient(TechnicalPriceClient):
 
 def test_download_tickers_in_chunks_merges_non_empty_chunks():
     client = ChunkingTechnicalPriceClient()
-    tickers = [f"TICKER{index}" for index in range(DOWNLOAD_RETRY_CHUNK_SIZE + 1)]
+    tickers = [f"TICKER{index}" for index in range(
+        DOWNLOAD_RETRY_CHUNK_SIZE + 1)]
 
     result = client.download_tickers_in_chunks(tickers)
 
@@ -133,7 +134,8 @@ def test_normalize_price_data_handles_empty_multi_single_and_plain_multi_ticker(
     multi_ticker_plain_data = pd.DataFrame({"Close": [1.0]})
 
     assert client.normalize_price_data(pd.DataFrame(), ["AAPL"]).empty
-    assert client.normalize_price_data(multi_index_data, ["AAPL"]).equals(multi_index_data)
+    assert client.normalize_price_data(
+        multi_index_data, ["AAPL"]).equals(multi_index_data)
     assert isinstance(
         client.normalize_price_data(single_ticker_data, ["AAPL"]).columns,
         pd.MultiIndex,
@@ -162,6 +164,9 @@ def test_extract_field_handles_empty_missing_multiindex_single_ticker_and_fallba
 
     assert client.extract_field(pd.DataFrame(), ["AAPL"], "Close").empty
     assert client.extract_field(multi_index_data, ["AAPL"], "Open").empty
-    assert client.extract_field(multi_index_data, ["AAPL"], "Close")["AAPL"].tolist() == [1.0]
-    assert client.extract_field(single_ticker_data, ["AAPL"], "Close")["AAPL"].tolist() == [1.0]
-    assert client.extract_field(single_ticker_data, ["AAPL", "MSFT"], "Close").empty
+    assert client.extract_field(multi_index_data, ["AAPL"], "Close")[
+        "AAPL"].tolist() == [1.0]
+    assert client.extract_field(single_ticker_data, ["AAPL"], "Close")[
+        "AAPL"].tolist() == [1.0]
+    assert client.extract_field(
+        single_ticker_data, ["AAPL", "MSFT"], "Close").empty

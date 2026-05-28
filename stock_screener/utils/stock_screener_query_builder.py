@@ -60,7 +60,8 @@ class ScreenerFilters:
             self.params.extend([like_value for _ in SEARCH_COLUMNS])
             return
 
-        self.where_sql.append(search_condition_sql(search_column, self.placeholder))
+        self.where_sql.append(search_condition_sql(
+            search_column, self.placeholder))
         self.params.append(like_value)
 
 

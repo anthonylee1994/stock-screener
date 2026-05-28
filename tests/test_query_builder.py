@@ -82,7 +82,8 @@ def test_build_ticker_screener_query_returns_empty_query_for_no_tickers():
     assert query.endswith("WHERE 0")
     assert params == []
 
-    count_query, count_params = builder.build_ticker_screener_count_query(tickers=None)
+    count_query, count_params = builder.build_ticker_screener_count_query(
+        tickers=None)
 
     assert count_query == "SELECT 0 AS count"
     assert count_params == []
@@ -97,4 +98,5 @@ def test_normalize_sort_column_falls_back_to_market_cap():
 
 
 def test_search_condition_sql_uses_lowercase_like_with_escape():
-    assert search_condition_sql("Ticker", "?") == 'LOWER("Ticker") LIKE ? ESCAPE \'\\\''
+    assert search_condition_sql(
+        "Ticker", "?") == 'LOWER("Ticker") LIKE ? ESCAPE \'\\\''

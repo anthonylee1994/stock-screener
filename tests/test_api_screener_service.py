@@ -66,4 +66,5 @@ def test_screener_service_requests_one_extra_row_and_formats_page():
     assert response["offset"] == 4
     assert response["has_more"] is True
     assert response["next_offset"] == 6
-    assert [record["ticker"] for record in response["data"]] == ["AAPL", "MSFT"]
+    assert [record["ticker"]
+            for record in response["data"]] == ["AAPL", "MSFT"]

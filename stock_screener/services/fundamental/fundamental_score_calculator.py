@@ -61,14 +61,17 @@ class FundamentalScoreCalculator:
 
         score_frame = pd.concat(score_parts, axis=1)
         scored_data[SCORE_COLUMN] = score_frame.sum(axis=1).round(2)
-        scored_data[SCORE_COLUMN] = curve_score(scored_data[SCORE_COLUMN]).round(2)
-        scored_data[SCORE_COLUMN] = self.apply_core_metric_guardrail(scored_data)
+        scored_data[SCORE_COLUMN] = curve_score(
+            scored_data[SCORE_COLUMN]).round(2)
+        scored_data[SCORE_COLUMN] = self.apply_core_metric_guardrail(
+            scored_data)
         sorted_data = scored_data.sort_values(
             by=SCORE_COLUMN,
             ascending=False,
             ignore_index=True,
         )
-        selected_columns = [column for column in columns if column in sorted_data.columns]
+        selected_columns = [
+            column for column in columns if column in sorted_data.columns]
         return sorted_data.loc[:, selected_columns]
 
     def score_column(

@@ -22,7 +22,8 @@ class FakeTechnicalPriceClient:
 
 
 def test_technical_indicator_calculator_calculates_rows_for_valid_tickers():
-    calculator = TechnicalIndicatorCalculator(price_client=FakeTechnicalPriceClient())
+    calculator = TechnicalIndicatorCalculator(
+        price_client=FakeTechnicalPriceClient())
     close = pd.Series(range(1, 203), dtype="float64")
     price_data = pd.DataFrame(
         {
@@ -50,13 +51,17 @@ def test_calculate_ticker_indicators_returns_none_for_missing_or_short_data():
     calculator = TechnicalIndicatorCalculator()
     close_prices = pd.DataFrame({"AAPL": [1.0, 2.0]})
 
-    assert calculator.calculate_ticker_indicators("MSFT", close_prices, pd.DataFrame()) is None
-    assert calculator.calculate_ticker_indicators("AAPL", close_prices, pd.DataFrame()) is None
+    assert calculator.calculate_ticker_indicators(
+        "MSFT", close_prices, pd.DataFrame()) is None
+    assert calculator.calculate_ticker_indicators(
+        "AAPL", close_prices, pd.DataFrame()) is None
 
 
 def test_latest_volume_returns_none_for_missing_or_empty_volume():
     calculator = TechnicalIndicatorCalculator()
 
     assert calculator.latest_volume("AAPL", pd.DataFrame()) is None
-    assert calculator.latest_volume("AAPL", pd.DataFrame({"AAPL": [None, pd.NA]})) is None
-    assert calculator.latest_volume("AAPL", pd.DataFrame({"AAPL": [None, 10]})) == 10
+    assert calculator.latest_volume(
+        "AAPL", pd.DataFrame({"AAPL": [None, pd.NA]})) is None
+    assert calculator.latest_volume(
+        "AAPL", pd.DataFrame({"AAPL": [None, 10]})) == 10

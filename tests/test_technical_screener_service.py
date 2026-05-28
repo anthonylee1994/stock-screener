@@ -48,7 +48,8 @@ class FailingTechnicalPriceClient:
 
 
 def test_technical_screener_service_returns_empty_default_columns_on_price_error():
-    service = TechnicalScreenerService(price_client=FailingTechnicalPriceClient())
+    service = TechnicalScreenerService(
+        price_client=FailingTechnicalPriceClient())
 
     result = service.run(["aapl"])
 
@@ -89,4 +90,5 @@ def test_technical_screener_service_scores_indicator_data_and_returns_copy():
 
     result = service.run(["AAPL"])
 
-    assert result.to_dict("records") == [{"Ticker": "AAPL", "Technical Score": 100.0}]
+    assert result.to_dict("records") == [
+        {"Ticker": "AAPL", "Technical Score": 100.0}]

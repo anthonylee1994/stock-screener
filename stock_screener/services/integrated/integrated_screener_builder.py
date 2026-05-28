@@ -101,8 +101,10 @@ class IntegratedScreenerBuilder:
             scored_data[SCORE_COLUMN] = pd.NA
             return scored_data
 
-        fundamental_score = to_numeric_series(scored_data[FUNDAMENTAL_SCORE_COLUMN])
-        technical_score = to_numeric_series(scored_data[TECHNICAL_SCORE_COLUMN])
+        fundamental_score = to_numeric_series(
+            scored_data[FUNDAMENTAL_SCORE_COLUMN])
+        technical_score = to_numeric_series(
+            scored_data[TECHNICAL_SCORE_COLUMN])
         valid_score_mask = fundamental_score.notna() & technical_score.notna()
         score = (
             (fundamental_score * FUNDAMENTAL_SCORE_WEIGHT)

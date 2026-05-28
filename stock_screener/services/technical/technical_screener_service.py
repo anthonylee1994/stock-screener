@@ -32,7 +32,8 @@ class TechnicalScreenerService:
             return pd.DataFrame(columns=DEFAULT_COLUMNS)
 
         try:
-            price_data = self.price_client.download_price_data(normalized_tickers)
+            price_data = self.price_client.download_price_data(
+                normalized_tickers)
         except Exception as error:
             logger.exception(
                 "獲取技術面價格資料失敗 tickers=%s: %s",

@@ -105,8 +105,10 @@ def test_integrated_screener_builder_curves_total_score_between_zero_and_one_hun
     builder = IntegratedScreenerBuilder()
     data = pd.DataFrame(
         [
-            {"Ticker": "LOW", FUNDAMENTAL_SCORE_COLUMN: 50.0, TECHNICAL_SCORE_COLUMN: 50.0},
-            {"Ticker": "MID", FUNDAMENTAL_SCORE_COLUMN: 70.0, TECHNICAL_SCORE_COLUMN: 70.0},
+            {"Ticker": "LOW", FUNDAMENTAL_SCORE_COLUMN: 50.0,
+                TECHNICAL_SCORE_COLUMN: 50.0},
+            {"Ticker": "MID", FUNDAMENTAL_SCORE_COLUMN: 70.0,
+                TECHNICAL_SCORE_COLUMN: 70.0},
             {
                 "Ticker": "HIGH",
                 FUNDAMENTAL_SCORE_COLUMN: 90.0,
@@ -117,15 +119,18 @@ def test_integrated_screener_builder_curves_total_score_between_zero_and_one_hun
 
     result = builder.add_total_score(data)
 
-    assert result[TOTAL_SCORE_COLUMN].tolist() == pytest.approx([0.0, 50.0, 100.0])
+    assert result[TOTAL_SCORE_COLUMN].tolist() == pytest.approx([
+        0.0, 50.0, 100.0])
 
 
 def test_integrated_screener_builder_curves_single_valid_total_score_to_one_hundred():
     builder = IntegratedScreenerBuilder()
     data = pd.DataFrame(
         [
-            {"Ticker": "VALID", FUNDAMENTAL_SCORE_COLUMN: 50.0, TECHNICAL_SCORE_COLUMN: 50.0},
-            {"Ticker": "MISSING", FUNDAMENTAL_SCORE_COLUMN: 70.0, TECHNICAL_SCORE_COLUMN: pd.NA},
+            {"Ticker": "VALID", FUNDAMENTAL_SCORE_COLUMN: 50.0,
+                TECHNICAL_SCORE_COLUMN: 50.0},
+            {"Ticker": "MISSING", FUNDAMENTAL_SCORE_COLUMN: 70.0,
+                TECHNICAL_SCORE_COLUMN: pd.NA},
         ]
     )
 

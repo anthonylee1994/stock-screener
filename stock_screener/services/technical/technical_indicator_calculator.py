@@ -12,8 +12,10 @@ class TechnicalIndicatorCalculator:
         price_data: pd.DataFrame,
         tickers: list[str],
     ) -> pd.DataFrame:
-        close_prices = self.price_client.extract_close_prices(price_data, tickers)
-        volumes = self.price_client.extract_field(price_data, tickers, "Volume")
+        close_prices = self.price_client.extract_close_prices(
+            price_data, tickers)
+        volumes = self.price_client.extract_field(
+            price_data, tickers, "Volume")
         rows = []
         for ticker in tickers:
             row = self.calculate_ticker_indicators(

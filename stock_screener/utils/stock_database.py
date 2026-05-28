@@ -121,7 +121,8 @@ class StockDatabase:
     def connect(self):
         start_time = time.perf_counter()
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
-        connection = sqlite3.connect(self.database_path, check_same_thread=False)
+        connection = sqlite3.connect(
+            self.database_path, check_same_thread=False)
         elapsed_ms = (time.perf_counter() - start_time) * 1000
         logger.info("SQLite connect elapsed_ms=%.2f", elapsed_ms)
         return SQLiteConnection(connection)
@@ -170,10 +171,12 @@ class StockDatabase:
                     offset=offset,
                 )
                 count_query, count_params = (
-                    self.query_builder.build_ticker_screener_count_query(tickers)
+                    self.query_builder.build_ticker_screener_count_query(
+                        tickers)
                 )
                 data = self.read_dataframe(connection, data_query, data_params)
-                total_count = self.read_count(connection, count_query, count_params)
+                total_count = self.read_count(
+                    connection, count_query, count_params)
             else:
                 data, total_count = self.read_search_screener_stocks_with_count(
                     connection=connection,
@@ -272,8 +275,10 @@ class StockDatabase:
         normalized_data = self.schema.normalize_columns(data)
         with DB_LOCK:
             with self.connect() as connection:
-                connection.execute(f'DROP TABLE IF EXISTS "{STOCKS_NEXT_TABLE}"')
-                self.insert_stocks(connection, STOCKS_NEXT_TABLE, normalized_data)
+                connection.execute(
+                    f'DROP TABLE IF EXISTS "{STOCKS_NEXT_TABLE}"')
+                self.insert_stocks(
+                    connection, STOCKS_NEXT_TABLE, normalized_data)
                 connection.commit()
                 connection.execute(f'DROP TABLE IF EXISTS "{STOCKS_TABLE}"')
                 connection.execute(
@@ -299,7 +304,8 @@ class StockDatabase:
         data: pd.DataFrame,
     ) -> None:
         connection.execute(self.schema.create_table_sql(table_name))
-        quoted_columns = [quote_identifier(column) for column in STOCKS_COLUMNS]
+        quoted_columns = [quote_identifier(column)
+                          for column in STOCKS_COLUMNS]
         placeholders = ", ".join(self.placeholder for _ in STOCKS_COLUMNS)
         insert_sql = (
             f'INSERT INTO "{table_name}" ({", ".join(quoted_columns)}) '
@@ -313,7 +319,7 @@ class StockDatabase:
             range(0, len(rows), INSERT_BATCH_SIZE),
             start=1,
         ):
-            batch = rows[start : start + INSERT_BATCH_SIZE]
+            batch = rows[start: start + INSERT_BATCH_SIZE]
             connection.executemany(insert_sql, batch)
             logger.info(
                 "stocks insert batch table=%s batch=%s rows=%s inserted=%s total=%s",

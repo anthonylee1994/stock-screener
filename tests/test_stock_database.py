@@ -19,17 +19,20 @@ def test_sqlite_connection_executes_commits_rolls_back_and_closes_once(tmp_path)
     connection = SQLiteConnection(raw_connection)
 
     connection.execute("CREATE TABLE items (name TEXT)")
-    connection.executemany("INSERT INTO items (name) VALUES (?)", [("before",)])
+    connection.executemany(
+        "INSERT INTO items (name) VALUES (?)", [("before",)])
     connection.commit()
 
     with pytest.raises(RuntimeError):
         with connection:
-            connection.execute("INSERT INTO items (name) VALUES (?)", ("rolled back",))
+            connection.execute(
+                "INSERT INTO items (name) VALUES (?)", ("rolled back",))
             raise RuntimeError("rollback")
 
     connection.close()
     assert connection.closed is True
-    assert connection.normalize_sql_for_log(" SELECT   *\nFROM items ") == "SELECT * FROM items"
+    assert connection.normalize_sql_for_log(
+        " SELECT   *\nFROM items ") == "SELECT * FROM items"
 
     check_connection = sqlite3.connect(database_path)
     rows = check_connection.execute("SELECT name FROM items").fetchall()
@@ -145,7 +148,8 @@ def test_resolve_search_column_falls_back_after_empty_search_column_iteration(
 
     database = StockDatabase(tmp_path / "fallback.sqlite")
     database.initialize()
-    monkeypatch.setattr(stock_database_module, "SEARCH_COLUMNS", EmptySearchColumns())
+    monkeypatch.setattr(stock_database_module,
+                        "SEARCH_COLUMNS", EmptySearchColumns())
 
     with database.connect() as connection:
         assert database.resolve_search_column_and_count(
@@ -168,7 +172,8 @@ def test_stock_schema_adds_missing_columns_and_normalizes_data(tmp_path):
         schema.ensure_table(connection, STOCKS_TABLE)
         columns = schema.fetch_table_columns(connection, STOCKS_TABLE)
 
-    normalized_data = schema.normalize_columns(pd.DataFrame([{"Ticker": "AAPL", "Extra": 1}]))
+    normalized_data = schema.normalize_columns(
+        pd.DataFrame([{"Ticker": "AAPL", "Extra": 1}]))
 
     assert "Company" in columns
     assert list(normalized_data.columns) == list(STOCKS_COLUMNS)

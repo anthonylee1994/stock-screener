@@ -26,7 +26,8 @@ class TechnicalPriceClient:
             )
             retry_data = self.download_tickers_in_chunks(failed_tickers)
             price_data = self.merge_price_data(price_data, retry_data)
-            failed_tickers = self.find_failed_tickers(price_data, failed_tickers)
+            failed_tickers = self.find_failed_tickers(
+                price_data, failed_tickers)
 
         if failed_tickers:
             logger.warning(
@@ -61,7 +62,7 @@ class TechnicalPriceClient:
     def download_tickers_in_chunks(self, tickers: list[str]) -> pd.DataFrame:
         chunks = []
         for start in range(0, len(tickers), DOWNLOAD_RETRY_CHUNK_SIZE):
-            chunk = tickers[start : start + DOWNLOAD_RETRY_CHUNK_SIZE]
+            chunk = tickers[start: start + DOWNLOAD_RETRY_CHUNK_SIZE]
             chunk_data = self.download_tickers(chunk)
             if not chunk_data.empty:
                 chunks.append(chunk_data)
