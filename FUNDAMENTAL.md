@@ -43,50 +43,45 @@
 
 ## 總分權重
 
-現時真正有權重嘅基本面指標得 5 個：
+現時基本面權重會覆蓋增長、質素、估值、規模同負債風險：
 
 | 指標分數            | 比重    |
 | ------------------- | ------- |
-| `PEG Score`         | **35%** |
-| `EPS Past 5Y Score` | **25%** |
-| `ROE Score`         | **15%** |
+| `EPS Past 5Y Score` | **18%** |
 | `ROIC Score`        | **15%** |
-| `Market Cap Score`  | **10%** |
+| `ROE Score`         | **12%** |
+| `PEG Score`         | **12%** |
+| `Sales Past 5Y Score` | **10%** |
+| `Profit Margin Score` | **8%** |
+| `P/FCF Score`       | **8%** |
+| `Market Cap Score`  | **5%** |
+| `Forward P/E Score` | **5%** |
+| `Debt/Equity Score` | **5%** |
+| `P/S Score`         | **2%** |
 
 公式：
 
 ```text
 Fundamental Score =
-  (PEG Score * 0.35)
-+ (EPS Past 5Y Score * 0.25)
-+ (ROE Score * 0.15)
+  (EPS Past 5Y Score * 0.18)
 + (ROIC Score * 0.15)
-+ (Market Cap Score * 0.10)
++ (ROE Score * 0.12)
++ (PEG Score * 0.12)
++ (Sales Past 5Y Score * 0.10)
++ (Profit Margin Score * 0.08)
++ (P/FCF Score * 0.08)
++ (Market Cap Score * 0.05)
++ (Forward P/E Score * 0.05)
++ (Debt/Equity Score * 0.05)
++ (P/S Score * 0.02)
 ```
 
 即係目前評分最重視：
 
-1. 增長相對估值平唔平
-2. 盈利增長夠唔夠強
-3. ROE / ROIC 呢類資本回報率
-4. 公司規模
-
----
-
-## 會顯示但暫時唔影響總分嘅指標
-
-以下欄位會照樣計 percentile score 同顯示，但權重係 0，所以唔會影響 `Fundamental Score`：
-
-| 指標分數              | 權重 |
-| --------------------- | ---- |
-| `Sales Past 5Y Score` | 0%   |
-| `Profit Margin Score` | 0%   |
-| `Forward P/E Score`   | 0%   |
-| `P/S Score`           | 0%   |
-| `P/FCF Score`         | 0%   |
-| `Debt/Equity Score`   | 0%   |
-
-呢啲欄位仍然有用，可以幫你睇間公司嘅收入增長、利潤率、估值同負債風險。不過現時系統只係當參考資料，未納入基本面總分。
+1. 盈利同收入增長
+2. ROIC / ROE / Profit Margin 呢類營運質素
+3. PEG、P/FCF、Forward P/E 呢類估值
+4. 公司規模同負債風險
 
 ---
 

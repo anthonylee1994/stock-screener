@@ -6,6 +6,7 @@ from stock_screener.services.fundamental.fundamental_data_normalizer import (
 )
 from stock_screener.services.fundamental.fundamental_score_calculator import (
     FundamentalScoreCalculator,
+    SCORE_WEIGHTS,
 )
 from stock_screener.services.technical.technical_score_calculator import (
     TechnicalScoreCalculator,
@@ -90,17 +91,29 @@ def test_fundamental_score_calculator_scores_and_sorts_weighted_metrics():
                 "Ticker": "WEAK",
                 "Market Cap": "1,000",
                 "PEG": "3",
+                "P/S": "10",
+                "P/FCF": "50",
+                "Forward P/E": "40",
                 "EPS Past 5Y": "5%",
+                "Sales Past 5Y": "2%",
                 "ROE": "10%",
                 "ROIC": "10%",
+                "Profit Margin": "5%",
+                "Debt/Equity": "3",
             },
             {
                 "Ticker": "STRONG",
                 "Market Cap": "3,000",
                 "PEG": "1",
+                "P/S": "2",
+                "P/FCF": "10",
+                "Forward P/E": "15",
                 "EPS Past 5Y": "25%",
+                "Sales Past 5Y": "20%",
                 "ROE": "30%",
                 "ROIC": "35%",
+                "Profit Margin": "25%",
+                "Debt/Equity": "0.2",
             },
         ]
     )
@@ -120,6 +133,23 @@ def test_fundamental_score_calculator_scores_and_sorts_weighted_metrics():
     assert scored.loc[0, "Fundamental Score"] == 100.0
     assert scored.loc[1, "Fundamental Score"] == 0.0
     assert scored.loc[0, "PEG Score"] == 100.0
+
+
+def test_fundamental_score_weights_are_balanced_and_sum_to_one():
+    assert sum(SCORE_WEIGHTS.values()) == 1.0
+    assert SCORE_WEIGHTS == {
+        "Market Cap": 0.05,
+        "EPS Past 5Y": 0.18,
+        "Sales Past 5Y": 0.1,
+        "ROE": 0.12,
+        "ROIC": 0.15,
+        "Profit Margin": 0.08,
+        "Forward P/E": 0.05,
+        "PEG": 0.12,
+        "P/S": 0.02,
+        "P/FCF": 0.08,
+        "Debt/Equity": 0.05,
+    }
 
 
 def test_fundamental_score_calculator_handles_no_scoreable_columns():

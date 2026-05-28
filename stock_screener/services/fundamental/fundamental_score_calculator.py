@@ -10,17 +10,17 @@ from stock_screener.utils.screener_rules import (
 
 SCORE_COLUMN = FUNDAMENTAL_SCORE_COLUMN
 SCORE_METRICS = [
-    (MARKET_CAP_COLUMN, True, 0.1, "Market Cap Score"),
-    ("EPS Past 5Y", True, 0.25, "EPS Past 5Y Score"),
-    ("Sales Past 5Y", True, 0, "Sales Past 5Y Score"),
-    ("ROE", True, 0.15, "ROE Score"),
+    (MARKET_CAP_COLUMN, True, 0.05, "Market Cap Score"),
+    ("EPS Past 5Y", True, 0.18, "EPS Past 5Y Score"),
+    ("Sales Past 5Y", True, 0.1, "Sales Past 5Y Score"),
+    ("ROE", True, 0.12, "ROE Score"),
     ("ROIC", True, 0.15, "ROIC Score"),
-    ("Profit Margin", True, 0, "Profit Margin Score"),
-    ("Forward P/E", False, 0, "Forward P/E Score"),
-    ("PEG", False, 0.35, "PEG Score"),
-    ("P/S", False, 0, "P/S Score"),
-    ("P/FCF", False, 0, "P/FCF Score"),
-    ("Debt/Equity", False, 0, "Debt/Equity Score"),
+    ("Profit Margin", True, 0.08, "Profit Margin Score"),
+    ("Forward P/E", False, 0.05, "Forward P/E Score"),
+    ("PEG", False, 0.12, "PEG Score"),
+    ("P/S", False, 0.02, "P/S Score"),
+    ("P/FCF", False, 0.08, "P/FCF Score"),
+    ("Debt/Equity", False, 0.05, "Debt/Equity Score"),
 ]
 SCORE_WEIGHTS = {metric: weight for metric, _, weight, _ in SCORE_METRICS}
 
