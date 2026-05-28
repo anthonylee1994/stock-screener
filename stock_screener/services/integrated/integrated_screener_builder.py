@@ -1,0 +1,106 @@
+import logging
+import time
+
+import pandas as pd
+
+from stock_screener.services.fundamental.fundamental_score_calculator import SCORE_COLUMN as FUNDAMENTAL_SCORE_COLUMN
+from stock_screener.services.fundamental.fundamental_screener_service import fundamental_screener_service
+from stock_screener.services.technical.technical_score_calculator import SCORE_COLUMN as TECHNICAL_SCORE_COLUMN
+from stock_screener.services.technical.technical_screener_service import (
+    technical_screener_service,
+)
+from stock_screener.utils.screener_rules import TOTAL_SCORE_COLUMN
+
+
+SCORE_COLUMN = TOTAL_SCORE_COLUMN
+FUNDAMENTAL_SCORE_WEIGHT = 0.6
+TECHNICAL_SCORE_WEIGHT = 0.4
+logger = logging.getLogger(__name__)
+
+
+class IntegratedScreenerBuilder:
+    def __init__(
+        self,
+        fundamental_service=fundamental_screener_service,
+        technical_service=technical_screener_service,
+    ):
+        self.fundamental_service = fundamental_service
+        self.technical_service = technical_service
+
+    def build(
+        self,
+        limit: int,
+        force_refresh: bool = False,
+    ) -> pd.DataFrame:
+        started_at = time.monotonic()
+        logger.info(
+            "開始建立完整篩選器資料 limit=%s force_refresh=%s",
+            limit,
+            force_refresh,
+        )
+
+        fundamental_data = self.get_fundamental_data(limit)
+        if fundamental_data.empty or "Ticker" not in fundamental_data.columns:
+            logger.warning(
+                "完整篩選器資料冇 ticker rows=%s elapsed=%.2fs",
+                len(fundamental_data),
+                time.monotonic() - started_at,
+            )
+            return fundamental_data.copy()
+
+        technical_data = self.get_technical_data(fundamental_data)
+        if technical_data.empty:
+            full_data = self.add_total_score(fundamental_data)
+        else:
+            full_data = self.add_total_score(
+                fundamental_data.merge(technical_data, on="Ticker", how="left")
+            )
+
+        logger.info(
+            "完整篩選器資料已建立 limit=%s rows=%s elapsed=%.2fs",
+            limit,
+            len(full_data),
+            time.monotonic() - started_at,
+        )
+        return full_data.copy()
+
+    def get_fundamental_data(self, limit: int) -> pd.DataFrame:
+        logger.info("獲取基本面篩選器資料 limit=%s", limit)
+        started_at = time.monotonic()
+        data = self.fundamental_service.run(limit=limit)
+        logger.info(
+            "已獲取基本面篩選器資料 rows=%s elapsed=%.2fs",
+            len(data),
+            time.monotonic() - started_at,
+        )
+        return data
+
+    def get_technical_data(self, fundamental_data: pd.DataFrame) -> pd.DataFrame:
+        tickers = fundamental_data["Ticker"].dropna().astype(str).tolist()
+        logger.info("獲取技術面篩選器資料 tickers=%s", len(tickers))
+        started_at = time.monotonic()
+        data = self.technical_service.run(tickers)
+        logger.info(
+            "已獲取技術面篩選器資料 rows=%s elapsed=%.2fs",
+            len(data),
+            time.monotonic() - started_at,
+        )
+        return data
+
+    def add_total_score(self, data: pd.DataFrame) -> pd.DataFrame:
+        if data.empty:
+            return data
+
+        scored_data = data.copy()
+        if (
+            FUNDAMENTAL_SCORE_COLUMN not in scored_data.columns
+            or TECHNICAL_SCORE_COLUMN not in scored_data.columns
+        ):
+            scored_data[SCORE_COLUMN] = pd.NA
+            return scored_data
+
+        score = (scored_data[FUNDAMENTAL_SCORE_COLUMN] * FUNDAMENTAL_SCORE_WEIGHT) + (
+            scored_data[TECHNICAL_SCORE_COLUMN] * TECHNICAL_SCORE_WEIGHT
+        )
+        scored_data[SCORE_COLUMN] = score.round(2)
+        return scored_data
