@@ -12,8 +12,8 @@ Base URL: `https://stock-screener.on99.app`
 
 `api_token` 可以放喺：
 
-- Query string: `?api_token=YOUR_API_TOKEN`
-- JSON body: `{"api_token": "YOUR_API_TOKEN"}`
+- Query string: `?api_token=YOUR_API_TOKEN` (GET request)
+- JSON body: `{"api_token": "YOUR_API_TOKEN"}` (POST request)
 
 ---
 
