@@ -86,16 +86,16 @@ merges a JSON body if one is provided, but the route is exposed as `GET`.
 
 ### Query Parameters
 
-| Field        | Type    | Default      | Description                                                                                                                        |
-| ------------ | ------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `api_token`  | string  | required     | Must match the configured API token.                                                                                               |
-| `sector`     | string  | `All`        | Sector filter. Use `All` for no sector filter.                                                                                     |
-| `market_cap` | string  | `+large`     | Market-cap filter. Supported API values: `+mid`, `+large`, `mid`, `large`, `mega`.                                                 |
-| `search`     | string  | empty        | Case-insensitive substring search against ticker and company/name.                                                                 |
+| Field        | Type    | Default       | Description                                                                                                                        |
+| ------------ | ------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `api_token`  | string  | required      | Must match the configured API token.                                                                                               |
+| `sector`     | string  | `All`         | Sector filter. Use `All` for no sector filter.                                                                                     |
+| `market_cap` | string  | `+large`      | Market-cap filter. Supported API values: `+mid`, `+large`, `mid`, `large`, `mega`.                                                 |
+| `search`     | string  | empty         | Case-insensitive substring search against ticker and company/name.                                                                 |
 | `order`      | string  | `total_score` | Sort field. Supported API values: `market_cap`, `fundamental_score`, `technical_score`, `total_score`, `change_percent`, `volume`. |
-| `ascend`     | boolean | `false`      | Sort ascending when true. Accepted true values include `1`, `true`, `yes`, `y`, and `on`. Anything else is treated false.          |
-| `limit`      | integer | `100`        | Number of rows to return for this page. Values below `1` become `1`; values above `100` become `100`.                              |
-| `offset`     | integer | `0`          | Number of matching rows to skip before returning this page. Values below `0` become `0`.                                           |
+| `ascend`     | boolean | `false`       | Sort ascending when true. Accepted true values include `1`, `true`, `yes`, `y`, and `on`. Anything else is treated false.          |
+| `limit`      | integer | `100`         | Number of rows to return for this page. Values below `1` become `1`; values above `100` become `100`.                              |
+| `offset`     | integer | `0`           | Number of matching rows to skip before returning this page. Values below `0` become `0`.                                           |
 
 ### `POST /auth`
 

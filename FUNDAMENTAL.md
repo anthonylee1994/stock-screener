@@ -45,19 +45,19 @@
 
 現時基本面權重會覆蓋增長、質素、估值、規模同負債風險：
 
-| 指標分數            | 比重    |
-| ------------------- | ------- |
-| `EPS Past 5Y Score` | **18%** |
-| `ROIC Score`        | **15%** |
-| `ROE Score`         | **12%** |
-| `PEG Score`         | **12%** |
+| 指標分數              | 比重    |
+| --------------------- | ------- |
+| `EPS Past 5Y Score`   | **18%** |
+| `ROIC Score`          | **15%** |
+| `ROE Score`           | **12%** |
+| `PEG Score`           | **12%** |
 | `Sales Past 5Y Score` | **10%** |
-| `Profit Margin Score` | **8%** |
-| `P/FCF Score`       | **8%** |
-| `Market Cap Score`  | **5%** |
-| `Forward P/E Score` | **5%** |
-| `Debt/Equity Score` | **5%** |
-| `P/S Score`         | **2%** |
+| `Profit Margin Score` | **8%**  |
+| `P/FCF Score`         | **8%**  |
+| `Market Cap Score`    | **5%**  |
+| `Forward P/E Score`   | **5%**  |
+| `Debt/Equity Score`   | **5%**  |
+| `P/S Score`           | **2%**  |
 
 公式：
 
