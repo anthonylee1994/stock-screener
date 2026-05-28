@@ -2,7 +2,7 @@
 
 ## 概覽
 
-Base URL: `http://localhost:3000`（本地）
+Base URL: `https://stock-screener.on99.app`
 
 所有請求都需要帶 `api_token` 做身份驗證。
 
@@ -47,40 +47,40 @@ Base URL: `http://localhost:3000`（本地）
 
 **Query Parameters**
 
-| 參數          | 類型     | 預設值        | 說明                                               |
-| ------------- | -------- | ------------- | -------------------------------------------------- |
-| `api_token`   | `string` | —             | **必填**。身份驗證 token                           |
-| `sector`      | `string` | `All`         | 板塊篩選，傳 `All` 即不篩選                        |
-| `market_cap`  | `string` | `+large`      | 市值篩選，見下方市值選項                           |
-| `search`      | `string` | `""`          | 按 ticker 或公司名稱搜尋（模糊匹配）               |
-| `tickers`     | `string` | —             | 指定 ticker 列表，逗號分隔，例如 `AAPL,MSFT,GOOG` |
-| `order`       | `string` | `total_score` | 排序欄位，見下方排序選項                           |
-| `ascend`      | `bool`   | `false`       | `true` 升序，`false` 降序                          |
-| `limit`       | `int`    | `100`         | 每頁數量，最小 1，最大 100                         |
-| `offset`      | `int`    | `0`           | 分頁偏移量                                         |
+| 參數         | 類型     | 預設值        | 說明                                              |
+| ------------ | -------- | ------------- | ------------------------------------------------- |
+| `api_token`  | `string` | —             | **必填**。身份驗證 token                          |
+| `sector`     | `string` | `All`         | 板塊篩選，傳 `All` 即不篩選                       |
+| `market_cap` | `string` | `+large`      | 市值篩選，見下方市值選項                          |
+| `search`     | `string` | `""`          | 按 ticker 或公司名稱搜尋（模糊匹配）              |
+| `tickers`    | `string` | —             | 指定 ticker 列表，逗號分隔，例如 `AAPL,MSFT,GOOG` |
+| `order`      | `string` | `total_score` | 排序欄位，見下方排序選項                          |
+| `ascend`     | `bool`   | `false`       | `true` 升序，`false` 降序                         |
+| `limit`      | `int`    | `100`         | 每頁數量，最小 1，最大 100                        |
+| `offset`     | `int`    | `0`           | 分頁偏移量                                        |
 
 **市值選項 (`market_cap`)**
 
-| 值        | 範圍                          |
-| --------- | ----------------------------- |
-| `+mid`    | Market Cap ≥ $2B              |
-| `+large`  | Market Cap ≥ $10B（預設）     |
-| `micro`   | $50M – $300M                  |
-| `small`   | $300M – $2B                   |
-| `mid`     | $2B – $10B                    |
-| `large`   | $10B – $200B                  |
-| `mega`    | Market Cap ≥ $200B            |
+| 值       | 範圍                      |
+| -------- | ------------------------- |
+| `+mid`   | Market Cap ≥ $2B          |
+| `+large` | Market Cap ≥ $10B（預設） |
+| `micro`  | $50M – $300M              |
+| `small`  | $300M – $2B               |
+| `mid`    | $2B – $10B                |
+| `large`  | $10B – $200B              |
+| `mega`   | Market Cap ≥ $200B        |
 
 **排序選項 (`order`)**
 
-| 值                  | 排序依據          |
-| ------------------- | ----------------- |
-| `total_score`       | 總分（預設）      |
-| `fundamental_score` | 基本面分數        |
-| `technical_score`   | 技術面分數        |
-| `market_cap`        | 市值              |
-| `change_percent`    | 當日升跌幅（%）   |
-| `volume`            | 成交量            |
+| 值                  | 排序依據        |
+| ------------------- | --------------- |
+| `total_score`       | 總分（預設）    |
+| `fundamental_score` | 基本面分數      |
+| `technical_score`   | 技術面分數      |
+| `market_cap`        | 市值            |
+| `change_percent`    | 當日升跌幅（%） |
+| `volume`            | 成交量          |
 
 **Response**
 
@@ -95,13 +95,13 @@ Base URL: `http://localhost:3000`（本地）
 }
 ```
 
-| 欄位          | 說明                                        |
-| ------------- | ------------------------------------------- |
-| `data`        | 股票記錄陣列                                |
-| `count`       | 符合篩選條件嘅股票總數                      |
-| `limit`       | 本次請求嘅每頁數量                          |
-| `offset`      | 本次請求嘅偏移量                            |
-| `has_more`    | 係咪仲有下一頁                              |
+| 欄位          | 說明                                               |
+| ------------- | -------------------------------------------------- |
+| `data`        | 股票記錄陣列                                       |
+| `count`       | 符合篩選條件嘅股票總數                             |
+| `limit`       | 本次請求嘅每頁數量                                 |
+| `offset`      | 本次請求嘅偏移量                                   |
+| `has_more`    | 係咪仲有下一頁                                     |
 | `next_offset` | 下一頁嘅 `offset`，`has_more` 為 false 時係 `null` |
 
 **單筆股票記錄結構**
@@ -124,40 +124,40 @@ Base URL: `http://localhost:3000`（本地）
 
 **`fundamental` 物件**
 
-| 欄位                    | 說明                              |
-| ----------------------- | --------------------------------- |
-| `market_cap`            | 市值（美元）                      |
-| `forward_pe`            | 預期市盈率                        |
-| `peg`                   | PEG 比率                          |
-| `ps`                    | 市銷率                            |
-| `pfcf`                  | 市現率（自由現金流）              |
-| `eps_past_5y`           | 過去 5 年 EPS 增長率              |
-| `sales_past_5y`         | 過去 5 年收入增長率               |
-| `roe`                   | 股東權益回報率                    |
-| `roic`                  | 投入資本回報率                    |
-| `profit_margin`         | 利潤率                            |
-| `debt_equity`           | 負債比率                          |
-| `market_cap_score`      | 市值百分位分數（0-100）           |
-| `forward_pe_score`      | 預期市盈率百分位分數              |
-| `peg_score`             | PEG 百分位分數                    |
-| `ps_score`              | 市銷率百分位分數                  |
-| `pfcf_score`            | 市現率百分位分數                  |
-| `eps_past_5y_score`     | EPS 增長百分位分數                |
-| `sales_past_5y_score`   | 收入增長百分位分數                |
-| `roe_score`             | ROE 百分位分數                    |
-| `roic_score`            | ROIC 百分位分數                   |
-| `profit_margin_score`   | 利潤率百分位分數                  |
-| `debt_equity_score`     | 負債比率百分位分數                |
-| `fundamental_score`     | 基本面總分（0-100）               |
+| 欄位                  | 說明                    |
+| --------------------- | ----------------------- |
+| `market_cap`          | 市值（美元）            |
+| `forward_pe`          | 預期市盈率              |
+| `peg`                 | PEG 比率                |
+| `ps`                  | 市銷率                  |
+| `pfcf`                | 市現率（自由現金流）    |
+| `eps_past_5y`         | 過去 5 年 EPS 增長率    |
+| `sales_past_5y`       | 過去 5 年收入增長率     |
+| `roe`                 | 股東權益回報率          |
+| `roic`                | 投入資本回報率          |
+| `profit_margin`       | 利潤率                  |
+| `debt_equity`         | 負債比率                |
+| `market_cap_score`    | 市值百分位分數（0-100） |
+| `forward_pe_score`    | 預期市盈率百分位分數    |
+| `peg_score`           | PEG 百分位分數          |
+| `ps_score`            | 市銷率百分位分數        |
+| `pfcf_score`          | 市現率百分位分數        |
+| `eps_past_5y_score`   | EPS 增長百分位分數      |
+| `sales_past_5y_score` | 收入增長百分位分數      |
+| `roe_score`           | ROE 百分位分數          |
+| `roic_score`          | ROIC 百分位分數         |
+| `profit_margin_score` | 利潤率百分位分數        |
+| `debt_equity_score`   | 負債比率百分位分數      |
+| `fundamental_score`   | 基本面總分（0-100）     |
 
 **`technical` 物件**
 
-| 欄位                | 說明                              |
-| ------------------- | --------------------------------- |
-| `long_term_score`   | 長線技術分（佔 Technical Score 60%）|
-| `mid_term_score`    | 中線技術分（佔 Technical Score 30%）|
-| `short_term_score`  | 短線技術分（佔 Technical Score 10%）|
-| `technical_score`   | 技術面總分（0-100）               |
+| 欄位               | 說明                                 |
+| ------------------ | ------------------------------------ |
+| `long_term_score`  | 長線技術分（佔 Technical Score 60%） |
+| `mid_term_score`   | 中線技術分（佔 Technical Score 30%） |
+| `short_term_score` | 短線技術分（佔 Technical Score 10%） |
+| `technical_score`  | 技術面總分（0-100）                  |
 
 ---
 
@@ -173,13 +173,13 @@ Total Score = (Fundamental Score × 0.60) + (Technical Score × 0.40)
 
 所有基本面指標都係相對排名（股票池內百分位），按以下權重加總：
 
-| 指標              | 權重  |
-| ----------------- | ----- |
-| PEG Score         | 35%   |
-| EPS Past 5Y Score | 25%   |
-| ROE Score         | 15%   |
-| ROIC Score        | 15%   |
-| Market Cap Score  | 10%   |
+| 指標              | 權重 |
+| ----------------- | ---- |
+| PEG Score         | 35%  |
+| EPS Past 5Y Score | 25%  |
+| ROE Score         | 15%  |
+| ROIC Score        | 15%  |
+| Market Cap Score  | 10%  |
 
 ### Technical Score
 
