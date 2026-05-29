@@ -174,7 +174,6 @@ class FundamentalScoreCalculator:
             (
                 low_ps_sales_growth
                 | high_ps_sales_growth
-                | eps_growth
                 | eps_growth_with_roe
                 | high_roe_high_margin
                 | high_gross_margin

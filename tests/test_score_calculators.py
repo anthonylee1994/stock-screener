@@ -196,7 +196,7 @@ def test_fundamental_score_calculator_marks_potential_stock_setup():
                 "Sales Past 5Y": 0.26,
             },
             {
-                "Ticker": "EPS_5Y",
+                "Ticker": "EPS_5Y_ONLY",
                 "EPS Past 5Y": 0.16,
             },
             {
@@ -234,7 +234,7 @@ def test_fundamental_score_calculator_marks_potential_stock_setup():
     assert result_by_ticker == {
         "LOW_PS_SALES": True,
         "HIGH_PS_SALES": True,
-        "EPS_5Y": True,
+        "EPS_5Y_ONLY": False,
         "EPS_5Y_ROE": True,
         "ROE_MARGIN": True,
         "GROSS_MARGIN": True,

@@ -118,7 +118,6 @@ Fundamental Score =
 | --------------------- | ------------------------------------ |
 | 低 P/S + 高收入增長   | `P/S < 10` 且 `Sales Past 5Y > 20%`  |
 | 高 P/S + 更高收入增長 | `P/S > 10` 且 `Sales Past 5Y > 25%`  |
-| 5 年 EPS 增長         | `EPS Past 5Y > 15%`                  |
 | 5 年 EPS 增長 + ROE   | `EPS Past 5Y > 15%` 且 `ROE > 15%`   |
 | ROE + 淨利率          | `ROE > 15%` 且 `Profit Margin > 20%` |
 | 高毛利率              | `Gross Margin > 60%`                 |
