@@ -9,6 +9,10 @@ total score.
 - Pulls the first 1000 screened stocks from Finviz fundamentals.
 - Calculates fundamental percentile scores for valuation, growth, return, and
   market cap metrics.
+- Stores extra Finviz operating, short-interest, 52-week-high, and target-price
+  fields for potential-stock screening.
+- Exposes a `potential_stock` boolean filter for stocks with recent growth,
+  operating leverage, reasonable valuation, and short-interest setup.
 - Calculates technical scores from long-, mid-, and short-term momentum
   indicators.
 - Stores the full screener result in SQLite so API
@@ -92,6 +96,7 @@ merges a JSON body if one is provided, but the route is exposed as `GET`.
 | `sector`     | string  | `All`         | Sector filter. Use `All` for no sector filter.                                                                                     |
 | `market_cap` | string  | `+large`      | Market-cap filter. Supported API values: `+mid`, `+large`, `mid`, `large`, `mega`.                                                 |
 | `search`     | string  | empty         | Case-insensitive substring search against ticker and company/name.                                                                 |
+| `potential_stock` | boolean | `false` | When true, only returns rows flagged as potential stocks. Accepted true values include `1`, `true`, `yes`, `y`, and `on`. |
 | `order`      | string  | `total_score` | Sort field. Supported API values: `market_cap`, `fundamental_score`, `technical_score`, `total_score`, `change_percent`, `volume`. |
 | `ascend`     | boolean | `false`       | Sort ascending when true. Accepted true values include `1`, `true`, `yes`, `y`, and `on`. Anything else is treated false.          |
 | `limit`      | integer | `100`         | Number of rows to return for this page. Values below `1` become `1`; values above `100` become `100`.                              |
@@ -143,6 +148,12 @@ Search by ticker or company name:
 curl "http://localhost:3000/screener?api_token=YOUR_API_TOKEN&search=nvidia&order=total_score"
 ```
 
+Filter for potential stocks:
+
+```bash
+curl "http://localhost:3000/screener?api_token=YOUR_API_TOKEN&potential_stock=true"
+```
+
 Sort by total score ascending:
 
 ```bash
@@ -190,21 +201,37 @@ Success:
       "change_percent": -4.4201,
       "volume": 179993300,
       "total_score": 80.72,
+      "potential_stock": false,
       "fundamental": {
         "market_cap": 5475280000000.0,
         "forward_pe": 19.95,
         "peg": 0.5,
+        "ps": 20.45,
         "pfcf": 28.45,
         "eps_past_5y": 0.9527,
+        "sales_past_5y": 0.669,
         "roe": 1.0149,
         "roic": 0.7482,
+        "profit_margin": 0.6297,
+        "debt_equity": 0.07,
+        "eps_quarter_over_quarter": 2.1342,
+        "sales_quarter_over_quarter": 0.8523,
+        "operating_margin": 0.6402,
+        "short_interest": 0.0128,
+        "high_52w": -0.0942,
+        "target_price": 306.8,
+        "potential_stock": false,
         "market_cap_score": 100.0,
         "forward_pe_score": 59.18,
         "peg_score": 95.92,
+        "ps_score": 31.63,
         "pfcf_score": 72.45,
         "eps_past_5y_score": 91.84,
+        "sales_past_5y_score": 95.92,
         "roe_score": 93.88,
         "roic_score": 91.84,
+        "profit_margin_score": 93.88,
+        "debt_equity_score": 83.67,
         "fundamental_score": 88.16
       },
       "technical": {
@@ -240,6 +267,21 @@ screened stock pool:
 `Fundamental Score` uses percentage weights from `SCORE_WEIGHTS` in
 `stock_screener/services/fundamental/fundamental_score_calculator.py`.
 
+`Potential Stock` is a separate boolean flag, not part of `Fundamental Score`.
+It is true only when the row has:
+
+- `EPS Quarter Over Quarter >= 10%`
+- `Sales Quarter Over Quarter >= 5%`
+- EPS quarter-over-quarter growth greater than sales quarter-over-quarter growth
+- `Forward P/E <= 35` or `PEG <= 2`
+- `Operating Margin >= 8%`
+- `Short Interest >= 3%`
+- `52W High >= -25%`; missing `52W High` is allowed
+
+Missing required potential-stock inputs are treated as false. Percent-like
+Finviz fields are stored as ratios, so `12.5%` is returned as `0.125`.
+More detail is in `FUNDAMENTAL.md`.
+
 Technical scoring follows `TECHNICAL.md`:
 
 ```text
@@ -270,6 +312,8 @@ Rows without a total score are filtered out before response sorting.
 ## Data Sources
 
 - Fundamentals and initial screen: Finviz via `finvizfinance`
+- Potential-stock fields: Finviz Custom Screener fields `EPS Q/Q`, `Sales Q/Q`,
+  `Oper M`, `Short Float`, `52W High`, and `Target Price`
 - Top-level quote fields (`price`, `change`, `change_percent`, `volume`):
   Finviz via `finvizfinance`
 - Technical price history: Yahoo Finance via `yfinance`

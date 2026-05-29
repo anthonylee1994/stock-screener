@@ -47,17 +47,18 @@ Base URL: `https://stock-screener.on99.app`
 
 **Query Parameters**
 
-| 參數         | 類型     | 預設值        | 說明                                              |
-| ------------ | -------- | ------------- | ------------------------------------------------- |
-| `api_token`  | `string` | —             | **必填**。身份驗證 token                          |
-| `sector`     | `string` | `All`         | 板塊篩選，傳 `All` 即不篩選                       |
-| `market_cap` | `string` | `+large`      | 市值篩選，見下方市值選項                          |
-| `search`     | `string` | `""`          | 按 ticker 或公司名稱搜尋（模糊匹配）              |
-| `tickers`    | `string` | —             | 指定 ticker 列表，逗號分隔，例如 `AAPL,MSFT,GOOG` |
-| `order`      | `string` | `total_score` | 排序欄位，見下方排序選項                          |
-| `ascend`     | `bool`   | `false`       | `true` 升序，`false` 降序                         |
-| `limit`      | `int`    | `100`         | 每頁數量，最小 1，最大 100                        |
-| `offset`     | `int`    | `0`           | 分頁偏移量                                        |
+| 參數              | 類型     | 預設值        | 說明                                              |
+| ----------------- | -------- | ------------- | ------------------------------------------------- |
+| `api_token`       | `string` | —             | **必填**。身份驗證 token                          |
+| `sector`          | `string` | `All`         | 板塊篩選，傳 `All` 即不篩選                       |
+| `market_cap`      | `string` | `+large`      | 市值篩選，見下方市值選項                          |
+| `search`          | `string` | `""`          | 按 ticker 或公司名稱搜尋（模糊匹配）              |
+| `tickers`         | `string` | —             | 指定 ticker 列表，逗號分隔，例如 `AAPL,MSFT,GOOG` |
+| `potential_stock` | `bool`   | `false`       | 只返回 `Potential Stock` 為 true 嘅股票           |
+| `order`           | `string` | `total_score` | 排序欄位，見下方排序選項                          |
+| `ascend`          | `bool`   | `false`       | `true` 升序，`false` 降序                         |
+| `limit`           | `int`    | `100`         | 每頁數量，最小 1，最大 100                        |
+| `offset`          | `int`    | `0`           | 分頁偏移量                                        |
 
 **市值選項 (`market_cap`)**
 
@@ -117,6 +118,7 @@ Base URL: `https://stock-screener.on99.app`
   "change_percent": 0.63,
   "volume": 55000000,
   "total_score": 82.4,
+  "potential_stock": false,
   "fundamental": { ... },
   "technical": { ... }
 }
@@ -124,31 +126,38 @@ Base URL: `https://stock-screener.on99.app`
 
 **`fundamental` 物件**
 
-| 欄位                  | 說明                    |
-| --------------------- | ----------------------- |
-| `market_cap`          | 市值（美元）            |
-| `forward_pe`          | 預期市盈率              |
-| `peg`                 | PEG 比率                |
-| `ps`                  | 市銷率                  |
-| `pfcf`                | 市現率（自由現金流）    |
-| `eps_past_5y`         | 過去 5 年 EPS 增長率    |
-| `sales_past_5y`       | 過去 5 年收入增長率     |
-| `roe`                 | 股東權益回報率          |
-| `roic`                | 投入資本回報率          |
-| `profit_margin`       | 利潤率                  |
-| `debt_equity`         | 負債比率                |
-| `market_cap_score`    | 市值百分位分數（0-100） |
-| `forward_pe_score`    | 預期市盈率百分位分數    |
-| `peg_score`           | PEG 百分位分數          |
-| `ps_score`            | 市銷率百分位分數        |
-| `pfcf_score`          | 市現率百分位分數        |
-| `eps_past_5y_score`   | EPS 增長百分位分數      |
-| `sales_past_5y_score` | 收入增長百分位分數      |
-| `roe_score`           | ROE 百分位分數          |
-| `roic_score`          | ROIC 百分位分數         |
-| `profit_margin_score` | 利潤率百分位分數        |
-| `debt_equity_score`   | 負債比率百分位分數      |
-| `fundamental_score`   | 基本面總分（0-100）     |
+| 欄位                         | 說明                         |
+| ---------------------------- | ---------------------------- |
+| `market_cap`                 | 市值（美元）                 |
+| `forward_pe`                 | 預期市盈率                   |
+| `peg`                        | PEG 比率                     |
+| `ps`                         | 市銷率                       |
+| `pfcf`                       | 市現率（自由現金流）         |
+| `eps_past_5y`                | 過去 5 年 EPS 增長率         |
+| `sales_past_5y`              | 過去 5 年收入增長率          |
+| `roe`                        | 股東權益回報率               |
+| `roic`                       | 投入資本回報率               |
+| `profit_margin`              | 利潤率                       |
+| `debt_equity`                | 負債比率                     |
+| `eps_quarter_over_quarter`   | 最近季度 EPS 同比增長率      |
+| `sales_quarter_over_quarter` | 最近季度收入同比增長率       |
+| `operating_margin`           | 營業利潤率                   |
+| `short_interest`             | Short Float                  |
+| `high_52w`                   | 距離 52-week high 嘅相對距離 |
+| `target_price`               | 分析師目標價                 |
+| `potential_stock`            | 潛力股 boolean flag          |
+| `market_cap_score`           | 市值百分位分數（0-100）      |
+| `forward_pe_score`           | 預期市盈率百分位分數         |
+| `peg_score`                  | PEG 百分位分數               |
+| `ps_score`                   | 市銷率百分位分數             |
+| `pfcf_score`                 | 市現率百分位分數             |
+| `eps_past_5y_score`          | EPS 增長百分位分數           |
+| `sales_past_5y_score`        | 收入增長百分位分數           |
+| `roe_score`                  | ROE 百分位分數               |
+| `roic_score`                 | ROIC 百分位分數              |
+| `profit_margin_score`        | 利潤率百分位分數             |
+| `debt_equity_score`          | 負債比率百分位分數           |
+| `fundamental_score`          | 基本面總分（0-100）          |
 
 **`technical` 物件**
 
@@ -174,13 +183,46 @@ Total Score = Raw Total Score 拉 curve 到 0-100
 
 所有基本面指標都係相對排名（股票池內百分位），按以下權重加總：
 
-| 指標              | 權重 |
-| ----------------- | ---- |
-| PEG Score         | 35%  |
-| EPS Past 5Y Score | 25%  |
-| ROE Score         | 15%  |
-| ROIC Score        | 15%  |
-| Market Cap Score  | 10%  |
+| 指標分數            | 權重 |
+| ------------------- | ---- |
+| ROIC Score          | 20%  |
+| EPS Past 5Y Score   | 18%  |
+| PEG Score           | 17%  |
+| ROE Score           | 13%  |
+| Sales Past 5Y Score | 8%   |
+| P/FCF Score         | 7%   |
+| Profit Margin Score | 6%   |
+| Forward P/E Score   | 5%   |
+| P/S Score           | 3%   |
+| Debt/Equity Score   | 3%   |
+| Market Cap Score    | 0%   |
+
+核心 guardrail：
+
+- `ROIC`、`EPS Past 5Y`、`PEG` 三個核心指標至少要有 2 個有效數值；少過 2 個，`Fundamental Score` 最高 60。
+- `ROIC Score`、`EPS Past 5Y Score`、`PEG Score` 平均至少要 70；低過 70，`Fundamental Score` 最高 75。
+
+### Potential Stock
+
+`Potential Stock` 係獨立 boolean filter，唔會直接加落 `Fundamental Score`。所有百分比欄位用 ratio 表示，例如 `12.5%` 會係 `0.125`。
+
+要同時符合：
+
+| 條件                   | 門檻                               |
+| ---------------------- | ---------------------------------- |
+| EPS 季度增長           | `EPS Quarter Over Quarter >= 10%`  |
+| 收入季度增長           | `Sales Quarter Over Quarter >= 5%` |
+| 經營槓桿               | EPS 季度增長 > 收入季度增長        |
+| 估值未離地             | `Forward P/E <= 35` 或 `PEG <= 2`  |
+| 營業利潤率             | `Operating Margin >= 8%`           |
+| short setup            | `Short Interest >= 3%`             |
+| 未離 52-week high 太遠 | `52W High >= -25%`，缺值當通過     |
+
+如果相關資料缺失，`Potential Stock` 會當 `false`。API 可以用：
+
+```text
+GET /screener?api_token=YOUR_API_TOKEN&potential_stock=true
+```
 
 ### Technical Score
 
@@ -219,4 +261,7 @@ GET /screener?api_token=YOUR_API_TOKEN&search=apple
 
 # 指定 ticker 列表
 GET /screener?api_token=YOUR_API_TOKEN&tickers=AAPL,MSFT,NVDA,GOOGL
+
+# 篩選潛力股
+GET /screener?api_token=YOUR_API_TOKEN&potential_stock=true
 ```
