@@ -32,13 +32,13 @@ INSUFFICIENT_CORE_SCORE_CAP = 60.0
 CORE_SCORE_COLUMNS = ("ROIC Score", "EPS Past 5Y Score", "PEG Score")
 MIN_CORE_AVERAGE_SCORE = 70.0
 WEAK_CORE_SCORE_CAP = 75.0
-MIN_POTENTIAL_EPS_QOQ = 0.10
-MIN_POTENTIAL_SALES_QOQ = 0.05
-MAX_POTENTIAL_FORWARD_PE = 35.0
-MAX_POTENTIAL_PEG = 2.0
-MIN_POTENTIAL_OPERATING_MARGIN = 0.08
-MIN_POTENTIAL_SHORT_INTEREST = 0.03
-MIN_POTENTIAL_52W_HIGH_DISTANCE = -0.25
+MAX_POTENTIAL_LOW_PS = 10.0
+MIN_POTENTIAL_LOW_PS_SALES_PAST_5Y = 0.20
+MIN_POTENTIAL_HIGH_PS_SALES_PAST_5Y = 0.25
+MIN_POTENTIAL_EPS_PAST_5Y = 0.15
+MIN_POTENTIAL_ROE = 15.0
+MIN_POTENTIAL_PROFIT_MARGIN = 20.0
+MIN_POTENTIAL_GROSS_MARGIN = 0.60
 
 
 class FundamentalScoreCalculator:
@@ -69,19 +69,19 @@ class FundamentalScoreCalculator:
 
         score_frame = pd.concat(score_parts, axis=1)
         scored_data[SCORE_COLUMN] = score_frame.sum(axis=1).round(2)
-        scored_data[SCORE_COLUMN] = curve_score(
-            scored_data[SCORE_COLUMN]).round(2)
-        scored_data[SCORE_COLUMN] = self.apply_core_metric_guardrail(
-            scored_data)
+        scored_data[SCORE_COLUMN] = curve_score(scored_data[SCORE_COLUMN]).round(2)
+        scored_data[SCORE_COLUMN] = self.apply_core_metric_guardrail(scored_data)
         scored_data[POTENTIAL_STOCK_COLUMN] = self.calculate_potential_stock(
-            scored_data)
+            scored_data
+        )
         sorted_data = scored_data.sort_values(
             by=SCORE_COLUMN,
             ascending=False,
             ignore_index=True,
         )
         selected_columns = [
-            column for column in columns if column in sorted_data.columns]
+            column for column in columns if column in sorted_data.columns
+        ]
         return sorted_data.loc[:, selected_columns]
 
     def score_column(
@@ -150,37 +150,38 @@ class FundamentalScoreCalculator:
         return core_scores.mean(axis=1).fillna(0.0)
 
     def calculate_potential_stock(self, data: pd.DataFrame) -> pd.Series:
-        eps_growth = self.metric(data, "EPS Quarter Over Quarter")
-        sales_growth = self.metric(data, "Sales Quarter Over Quarter")
-        forward_pe = self.metric(data, "Forward P/E")
-        peg = self.metric(data, "PEG")
-        operating_margin = self.metric(data, "Operating Margin")
-        short_interest = self.metric(data, "Short Interest")
-        high_52w_distance = self.metric(data, "52W High")
+        ps = self.metric(data, "P/S")
+        sales_past_5y = self.metric(data, "Sales Past 5Y")
+        eps_past_5y = self.metric(data, "EPS Past 5Y")
+        roe = self.metric(data, "ROE")
+        profit_margin = self.metric(data, "Profit Margin")
+        gross_margin = self.metric(data, "Gross Margin")
 
-        growth_turning_up = (
-            (eps_growth >= MIN_POTENTIAL_EPS_QOQ)
-            & (sales_growth >= MIN_POTENTIAL_SALES_QOQ)
-            & (eps_growth > sales_growth)
+        low_ps_sales_growth = (ps < MAX_POTENTIAL_LOW_PS) & (
+            sales_past_5y > MIN_POTENTIAL_LOW_PS_SALES_PAST_5Y
         )
-        valuation_not_stretched = (
-            ((forward_pe > 0) & (forward_pe <= MAX_POTENTIAL_FORWARD_PE))
-            | ((peg > 0) & (peg <= MAX_POTENTIAL_PEG))
+        high_ps_sales_growth = (ps > MAX_POTENTIAL_LOW_PS) & (
+            sales_past_5y > MIN_POTENTIAL_HIGH_PS_SALES_PAST_5Y
         )
-        squeeze_setup = short_interest.fillna(
-            0) >= MIN_POTENTIAL_SHORT_INTEREST
-        near_high_without_breakout = (
-            high_52w_distance.isna()
-            | (high_52w_distance >= MIN_POTENTIAL_52W_HIGH_DISTANCE)
+        eps_growth = eps_past_5y > MIN_POTENTIAL_EPS_PAST_5Y
+        eps_growth_with_roe = eps_growth & (roe > MIN_POTENTIAL_ROE)
+        high_roe_high_margin = (roe > MIN_POTENTIAL_ROE) & (
+            profit_margin > MIN_POTENTIAL_PROFIT_MARGIN
         )
+        high_gross_margin = gross_margin > MIN_POTENTIAL_GROSS_MARGIN
 
         return (
-            growth_turning_up
-            & valuation_not_stretched
-            & (operating_margin >= MIN_POTENTIAL_OPERATING_MARGIN)
-            & squeeze_setup
-            & near_high_without_breakout
-        ).fillna(False).astype(bool)
+            (
+                low_ps_sales_growth
+                | high_ps_sales_growth
+                | eps_growth
+                | eps_growth_with_roe
+                | high_roe_high_margin
+                | high_gross_margin
+            )
+            .fillna(False)
+            .astype(bool)
+        )
 
     def metric(self, data: pd.DataFrame, column: str) -> pd.Series:
         if column not in data.columns:

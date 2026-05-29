@@ -22,6 +22,7 @@ FUNDAMENTAL_FIELDS = {
     "roe": "ROE",
     "roic": "ROIC",
     "profit_margin": "Profit Margin",
+    "gross_margin": "Gross Margin",
     "debt_equity": "Debt/Equity",
     "eps_quarter_over_quarter": "EPS Quarter Over Quarter",
     "sales_quarter_over_quarter": "Sales Quarter Over Quarter",

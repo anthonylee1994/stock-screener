@@ -40,6 +40,7 @@ STOCKS_COLUMNS = {
     "ROIC Score": "REAL",
     "Profit Margin": "REAL",
     "Profit Margin Score": "REAL",
+    "Gross Margin": "REAL",
     "Operating Margin": "REAL",
     "Debt/Equity": "REAL",
     "Debt/Equity Score": "REAL",

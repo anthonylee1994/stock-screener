@@ -69,6 +69,7 @@ def test_fundamental_screener_client_fetch_returns_empty_frame_for_none(monkeypa
 def test_fundamental_screener_client_requests_potential_stock_columns():
     assert 23 in CUSTOM_COLUMNS
     assert 30 in CUSTOM_COLUMNS
+    assert 39 in CUSTOM_COLUMNS
     assert 40 in CUSTOM_COLUMNS
     assert 57 in CUSTOM_COLUMNS
     assert 69 in CUSTOM_COLUMNS

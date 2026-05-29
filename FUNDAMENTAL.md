@@ -45,14 +45,15 @@
 
 除咗評分用嘅核心基本面欄位，系統亦會由 Finviz Custom Screener 攞以下欄位，主要用嚟顯示同判斷 `Potential Stock`：
 
-| 系統欄位                     | Finviz 欄位    | 解讀                                      |
-| ---------------------------- | -------------- | ----------------------------------------- |
-| `EPS Quarter Over Quarter`   | `EPS Q/Q`      | 最近季度 EPS 同比增長                     |
-| `Sales Quarter Over Quarter` | `Sales Q/Q`    | 最近季度收入同比增長                      |
-| `Operating Margin`           | `Oper M`       | 營業利潤率，反映營運槓桿同成本控制        |
-| `Short Interest`             | `Short Float`  | short float，粗略反映 short squeeze setup |
-| `52W High`                   | `52W High`     | 股價距離 52-week high 嘅相對距離          |
-| `Target Price`               | `Target Price` | 分析師目標價                              |
+| 系統欄位                     | Finviz 欄位    | 解讀                               |
+| ---------------------------- | -------------- | ---------------------------------- |
+| `EPS Quarter Over Quarter`   | `EPS Q/Q`      | 最近季度 EPS 同比增長              |
+| `Sales Quarter Over Quarter` | `Sales Q/Q`    | 最近季度收入同比增長               |
+| `Gross Margin`               | `Gross M`      | 毛利率                             |
+| `Operating Margin`           | `Oper M`       | 營業利潤率，反映營運槓桿同成本控制 |
+| `Short Interest`             | `Short Float`  | short float，顯示用資料            |
+| `52W High`                   | `52W High`     | 股價距離 52-week high 嘅相對距離   |
+| `Target Price`               | `Target Price` | 分析師目標價                       |
 
 百分比欄位會統一用 ratio 儲存，例如 `12.5%` 會儲成 `0.125`。如果 Finvizfinance 已經回傳 `0.125` 呢類 ratio，系統會直接保留，唔會再除 100。
 
@@ -111,17 +112,16 @@ Fundamental Score =
 
 `Potential Stock` 係 boolean filter，唔係 `Fundamental Score` 嘅一部分。佢用嚟搵「市場預期可能太低，但近期基本面開始轉強」嘅股票。
 
-現時要同時符合：
+現時符合以下任一條件就會標記為 `Potential Stock`：
 
-| 條件                   | 門檻                               |
-| ---------------------- | ---------------------------------- |
-| EPS 季度增長           | `EPS Quarter Over Quarter >= 10%`  |
-| 收入季度增長           | `Sales Quarter Over Quarter >= 5%` |
-| 經營槓桿               | EPS 季度增長 > 收入季度增長        |
-| 估值未離地             | `Forward P/E <= 35` 或 `PEG <= 2`  |
-| 營業利潤率             | `Operating Margin >= 8%`           |
-| short setup            | `Short Interest >= 3%`             |
-| 未離 52-week high 太遠 | `52W High >= -25%`，缺值當通過     |
+| 條件                  | 門檻                                 |
+| --------------------- | ------------------------------------ |
+| 低 P/S + 高收入增長   | `P/S < 10` 且 `Sales Past 5Y > 20%`  |
+| 高 P/S + 更高收入增長 | `P/S > 10` 且 `Sales Past 5Y > 25%`  |
+| 5 年 EPS 增長         | `EPS Past 5Y > 15%`                  |
+| 5 年 EPS 增長 + ROE   | `EPS Past 5Y > 15%` 且 `ROE > 15%`   |
+| ROE + 淨利率          | `ROE > 15%` 且 `Profit Margin > 20%` |
+| 高毛利率              | `Gross Margin > 60%`                 |
 
 如果相關資料缺失，`Potential Stock` 會當 `False`，唔會用 `NULL`。API 可以用 `potential_stock=true` 篩走非潛力股。
 

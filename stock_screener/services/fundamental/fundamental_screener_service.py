@@ -39,6 +39,7 @@ DEFAULT_COLUMNS = [
     "ROIC Score",
     "Profit Margin",
     "Profit Margin Score",
+    "Gross Margin",
     "Operating Margin",
     "Debt/Equity",
     "Debt/Equity Score",

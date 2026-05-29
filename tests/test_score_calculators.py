@@ -31,6 +31,7 @@ def test_fundamental_data_normalizer_rounds_non_score_metrics():
                 "ROE": "10.456%",
                 "ROIC": "9.876%",
                 "Profit Margin": "20.129%",
+                "Gross M": "60.5%",
                 "Oper M": "12.5%",
                 "Debt/Equity": "0.876",
                 "Short Float": "3.5%",
@@ -54,6 +55,7 @@ def test_fundamental_data_normalizer_rounds_non_score_metrics():
     assert normalized.loc[0, "ROE"] == 10.456
     assert normalized.loc[0, "ROIC"] == 0.0988
     assert normalized.loc[0, "Profit Margin"] == 20.129
+    assert normalized.loc[0, "Gross Margin"] == 0.605
     assert normalized.loc[0, "Operating Margin"] == 0.125
     assert normalized.loc[0, "Debt/Equity"] == 0.876
     assert normalized.loc[0, "Short Interest"] == 0.035
@@ -184,24 +186,41 @@ def test_fundamental_score_calculator_marks_potential_stock_setup():
     data = pd.DataFrame(
         [
             {
-                "Ticker": "POTENTIAL",
-                "Forward P/E": 24.0,
-                "PEG": 1.8,
-                "EPS Quarter Over Quarter": 0.35,
-                "Sales Quarter Over Quarter": 0.12,
-                "Operating Margin": 0.15,
-                "Short Interest": 0.06,
-                "52W High": -0.08,
+                "Ticker": "LOW_PS_SALES",
+                "P/S": 9.5,
+                "Sales Past 5Y": 0.21,
             },
             {
-                "Ticker": "SLOW",
-                "Forward P/E": 24.0,
-                "PEG": 1.8,
-                "EPS Quarter Over Quarter": 0.04,
-                "Sales Quarter Over Quarter": 0.12,
-                "Operating Margin": 0.15,
-                "Short Interest": 0.06,
-                "52W High": -0.08,
+                "Ticker": "HIGH_PS_SALES",
+                "P/S": 10.5,
+                "Sales Past 5Y": 0.26,
+            },
+            {
+                "Ticker": "EPS_5Y",
+                "EPS Past 5Y": 0.16,
+            },
+            {
+                "Ticker": "EPS_5Y_ROE",
+                "EPS Past 5Y": 0.16,
+                "ROE": 16.0,
+            },
+            {
+                "Ticker": "ROE_MARGIN",
+                "ROE": 16.0,
+                "Profit Margin": 21.0,
+            },
+            {
+                "Ticker": "GROSS_MARGIN",
+                "Gross Margin": 0.61,
+            },
+            {
+                "Ticker": "BOUNDARY_FAIL",
+                "P/S": 10.0,
+                "Sales Past 5Y": 0.25,
+                "EPS Past 5Y": 0.15,
+                "ROE": 15.0,
+                "Profit Margin": 20.0,
+                "Gross Margin": 0.60,
             },
         ]
     )
@@ -212,7 +231,15 @@ def test_fundamental_score_calculator_marks_potential_stock_setup():
     )
 
     result_by_ticker = scored.set_index("Ticker")["Potential Stock"].to_dict()
-    assert result_by_ticker == {"POTENTIAL": True, "SLOW": False}
+    assert result_by_ticker == {
+        "LOW_PS_SALES": True,
+        "HIGH_PS_SALES": True,
+        "EPS_5Y": True,
+        "EPS_5Y_ROE": True,
+        "ROE_MARGIN": True,
+        "GROSS_MARGIN": True,
+        "BOUNDARY_FAIL": False,
+    }
 
 
 def test_fundamental_score_calculator_marks_missing_potential_inputs_false():
@@ -221,8 +248,7 @@ def test_fundamental_score_calculator_marks_missing_potential_inputs_false():
         [
             {
                 "Ticker": "MISSING",
-                "Forward P/E": 24.0,
-                "PEG": 1.8,
+                "P/S": 9.0,
             },
         ]
     )
