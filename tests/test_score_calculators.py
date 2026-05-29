@@ -25,11 +25,17 @@ def test_fundamental_data_normalizer_rounds_non_score_metrics():
                 "P/S": "5.678",
                 "P/FCF": "44.444",
                 "EPS Past 5Y": "12.345%",
+                "EPS Q/Q": "40%",
                 "Sales Past 5Y": "6.789%",
+                "Sales Q/Q": "14%",
                 "ROE": "10.456%",
                 "ROIC": "9.876%",
                 "Profit Margin": "20.129%",
+                "Oper M": "12.5%",
                 "Debt/Equity": "0.876",
+                "Short Float": "3.5%",
+                "52W High": "-8%",
+                "Target Price": "250.50",
             }
         ]
     )
@@ -42,11 +48,17 @@ def test_fundamental_data_normalizer_rounds_non_score_metrics():
     assert normalized.loc[0, "P/S"] == 5.678
     assert normalized.loc[0, "P/FCF"] == 44.444
     assert normalized.loc[0, "EPS Past 5Y"] == 0.1234
+    assert normalized.loc[0, "EPS Quarter Over Quarter"] == 0.4
     assert normalized.loc[0, "Sales Past 5Y"] == 0.0679
+    assert normalized.loc[0, "Sales Quarter Over Quarter"] == 0.14
     assert normalized.loc[0, "ROE"] == 10.456
     assert normalized.loc[0, "ROIC"] == 0.0988
     assert normalized.loc[0, "Profit Margin"] == 20.129
+    assert normalized.loc[0, "Operating Margin"] == 0.125
     assert normalized.loc[0, "Debt/Equity"] == 0.876
+    assert normalized.loc[0, "Short Interest"] == 0.035
+    assert normalized.loc[0, "52W High"] == -0.08
+    assert normalized.loc[0, "Target Price"] == 250.5
 
 
 def test_fundamental_data_normalizer_returns_empty_data_unchanged():
@@ -165,6 +177,60 @@ def test_fundamental_score_weights_are_balanced_and_sum_to_one():
         "P/FCF": 0.07,
         "Debt/Equity": 0.03,
     }
+
+
+def test_fundamental_score_calculator_marks_potential_stock_setup():
+    calculator = FundamentalScoreCalculator()
+    data = pd.DataFrame(
+        [
+            {
+                "Ticker": "POTENTIAL",
+                "Forward P/E": 24.0,
+                "PEG": 1.8,
+                "EPS Quarter Over Quarter": 0.35,
+                "Sales Quarter Over Quarter": 0.12,
+                "Operating Margin": 0.15,
+                "Short Interest": 0.06,
+                "52W High": -0.08,
+            },
+            {
+                "Ticker": "SLOW",
+                "Forward P/E": 24.0,
+                "PEG": 1.8,
+                "EPS Quarter Over Quarter": 0.04,
+                "Sales Quarter Over Quarter": 0.12,
+                "Operating Margin": 0.15,
+                "Short Interest": 0.06,
+                "52W High": -0.08,
+            },
+        ]
+    )
+
+    scored = calculator.add_score(
+        data,
+        columns=["Ticker", "Potential Stock", "Fundamental Score"],
+    )
+
+    result_by_ticker = scored.set_index("Ticker")["Potential Stock"].to_dict()
+    assert result_by_ticker == {"POTENTIAL": True, "SLOW": False}
+
+
+def test_fundamental_score_calculator_marks_missing_potential_inputs_false():
+    calculator = FundamentalScoreCalculator()
+    data = pd.DataFrame(
+        [
+            {
+                "Ticker": "MISSING",
+                "Forward P/E": 24.0,
+                "PEG": 1.8,
+            },
+        ]
+    )
+
+    result = calculator.calculate_potential_stock(data)
+
+    assert result.tolist() == [False]
+    assert result.dtype == bool
 
 
 def test_fundamental_score_calculator_scores_metrics_relative_to_sector():

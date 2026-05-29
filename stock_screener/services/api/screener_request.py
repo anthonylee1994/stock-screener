@@ -49,6 +49,10 @@ class ScreenerRequest:
         return normalize_tickers(self.payload.get("tickers"))
 
     @property
+    def potential_stock(self) -> bool:
+        return self.parse_bool(self.payload.get("potential_stock"), False)
+
+    @property
     def limit(self) -> int:
         return self.parse_int(
             value=self.payload.get("limit"),

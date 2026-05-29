@@ -10,7 +10,31 @@ FUNDAMENTAL_FILTERS = {
 }
 DEFAULT_ORDER = "Market Cap."
 DEFAULT_ASCEND = False
-CUSTOM_COLUMNS = [1, 2, 3, 6, 8, 9, 10, 13, 19, 21, 33, 34, 38, 41, 65, 66, 67]
+CUSTOM_COLUMNS = [
+    1,
+    2,
+    3,
+    6,
+    8,
+    9,
+    10,
+    13,
+    19,
+    21,
+    22,
+    23,
+    30,
+    33,
+    34,
+    38,
+    40,
+    41,
+    57,
+    69,
+    65,
+    66,
+    67,
+]
 
 
 class FundamentalScreenerClient:

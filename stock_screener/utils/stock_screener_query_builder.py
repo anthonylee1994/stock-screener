@@ -4,6 +4,7 @@ from stock_screener.utils.screener_rules import (
     MARKET_CAP_COLUMN,
     MARKET_CAP_RANGES,
     MIN_VOLUME,
+    POTENTIAL_STOCK_COLUMN,
     SEARCH_COLUMNS,
     TOTAL_SCORE_COLUMN,
     VOLUME_COLUMN,
@@ -46,6 +47,12 @@ class ScreenerFilters:
             )
             self.params.append(max_cap)
 
+    def add_potential_stock(self, potential_stock: bool) -> None:
+        if not potential_stock:
+            return
+        self.where_sql.append(
+            f"{quote_identifier(POTENTIAL_STOCK_COLUMN)} = 1")
+
     def add_search(
         self,
         search_column: str | None,
@@ -78,12 +85,14 @@ class StockScreenerQueryBuilder:
         ascend: bool,
         limit: int,
         offset: int,
+        potential_stock: bool = False,
         search_column: str | None = None,
     ) -> tuple[str, list[Any]]:
         filters = self.build_screener_filters(
             sector=sector,
             market_cap=market_cap,
             search=search,
+            potential_stock=potential_stock,
             search_column=search_column,
         )
         return self.build_select_query(
@@ -100,12 +109,14 @@ class StockScreenerQueryBuilder:
         sector: str,
         market_cap: str,
         search: str,
+        potential_stock: bool = False,
         search_column: str | None = None,
     ) -> tuple[str, list[Any]]:
         filters = self.build_screener_filters(
             sector=sector,
             market_cap=market_cap,
             search=search,
+            potential_stock=potential_stock,
             search_column=search_column,
         )
         return self.build_count_query(
@@ -118,11 +129,13 @@ class StockScreenerQueryBuilder:
         sector: str,
         market_cap: str,
         search: str,
+        potential_stock: bool = False,
         search_column: str | None = None,
     ) -> ScreenerFilters:
         filters = ScreenerFilters(self.placeholder)
         filters.add_sector(sector)
         filters.add_market_cap(market_cap)
+        filters.add_potential_stock(potential_stock)
 
         normalized_search = str(search).strip()
         if normalized_search:

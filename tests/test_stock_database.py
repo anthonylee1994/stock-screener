@@ -67,6 +67,7 @@ def make_stock_frame() -> pd.DataFrame:
                 MARKET_CAP_COLUMN: 500_000_000_000,
                 VOLUME_COLUMN: 8_000_000,
                 TOTAL_SCORE_COLUMN: 75.0,
+                "Potential Stock": 1,
             },
         ]
     )
@@ -94,6 +95,7 @@ def test_stock_database_replaces_filters_reads_and_counts_stocks(tmp_path):
 
     stored_data = database.read_stocks()
     assert stored_data["Ticker"].tolist() == ["AAPL", "JPM"]
+    assert stored_data["Potential Stock"].tolist() == [0, 1]
     assert set(STOCKS_COLUMNS).issubset(stored_data.columns)
 
     ticker_data, ticker_count = database.read_screener_stocks_with_count(
@@ -114,6 +116,7 @@ def test_stock_database_replaces_filters_reads_and_counts_stocks(tmp_path):
         sector="Technology",
         market_cap="Mega",
         search="Apple",
+        potential_stock=False,
     )
     assert search_count == 1
     assert search_data["Ticker"].tolist() == ["AAPL"]
@@ -124,7 +127,8 @@ def test_stock_database_replaces_filters_reads_and_counts_stocks(tmp_path):
             sector="All",
             market_cap="Unknown",
             search="",
-        ) == (None, 2)
+            potential_stock=True,
+        ) == (None, 1)
         assert database.resolve_search_column_and_count(
             connection=connection,
             sector="All",

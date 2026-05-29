@@ -5,6 +5,7 @@ from stock_screener.utils.screener_rules import (
     FUNDAMENTAL_SCORE_COLUMN,
     MARKET_CAP_COLUMN,
     MIN_VOLUME,
+    POTENTIAL_STOCK_COLUMN,
     TECHNICAL_SCORE_COLUMN,
     TOTAL_SCORE_COLUMN,
     VOLUME_COLUMN,
@@ -31,14 +32,21 @@ STOCKS_COLUMNS = {
     "EPS Past 5Y Score": "REAL",
     "Sales Past 5Y": "REAL",
     "Sales Past 5Y Score": "REAL",
+    "EPS Quarter Over Quarter": "REAL",
+    "Sales Quarter Over Quarter": "REAL",
     "ROE": "REAL",
     "ROE Score": "REAL",
     "ROIC": "REAL",
     "ROIC Score": "REAL",
     "Profit Margin": "REAL",
     "Profit Margin Score": "REAL",
+    "Operating Margin": "REAL",
     "Debt/Equity": "REAL",
     "Debt/Equity Score": "REAL",
+    "Short Interest": "REAL",
+    "52W High": "REAL",
+    "Target Price": "REAL",
+    POTENTIAL_STOCK_COLUMN: "INTEGER",
     "Price": "REAL",
     CHANGE_PERCENT_COLUMN: "REAL",
     VOLUME_COLUMN: "REAL",
@@ -68,6 +76,7 @@ STOCKS_INDEX_COLUMNS = {
     "total_score": TOTAL_SCORE_COLUMN,
     "change_percent": CHANGE_PERCENT_COLUMN,
     "volume": VOLUME_COLUMN,
+    "potential_stock": POTENTIAL_STOCK_COLUMN,
 }
 STOCKS_SCREENER_SORT_INDEX_COLUMNS = {
     "market_cap": MARKET_CAP_COLUMN,
@@ -133,4 +142,7 @@ class StockTableSchema:
         for column in STOCKS_COLUMNS:
             if column not in normalized_data.columns:
                 normalized_data[column] = pd.NA
+        normalized_data[POTENTIAL_STOCK_COLUMN] = (
+            normalized_data[POTENTIAL_STOCK_COLUMN].fillna(False).astype(bool)
+        )
         return normalized_data.loc[:, list(STOCKS_COLUMNS.keys())]

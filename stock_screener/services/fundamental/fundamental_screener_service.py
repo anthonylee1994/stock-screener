@@ -6,7 +6,11 @@ from stock_screener.services.fundamental.fundamental_score_calculator import (
     FundamentalScoreCalculator,
 )
 from stock_screener.services.fundamental.fundamental_screener_client import FundamentalScreenerClient
-from stock_screener.utils.screener_rules import MARKET_CAP_COLUMN, VOLUME_COLUMN
+from stock_screener.utils.screener_rules import (
+    MARKET_CAP_COLUMN,
+    POTENTIAL_STOCK_COLUMN,
+    VOLUME_COLUMN,
+)
 
 
 DEFAULT_COLUMNS = [
@@ -27,14 +31,21 @@ DEFAULT_COLUMNS = [
     "EPS Past 5Y Score",
     "Sales Past 5Y",
     "Sales Past 5Y Score",
+    "EPS Quarter Over Quarter",
+    "Sales Quarter Over Quarter",
     "ROE",
     "ROE Score",
     "ROIC",
     "ROIC Score",
     "Profit Margin",
     "Profit Margin Score",
+    "Operating Margin",
     "Debt/Equity",
     "Debt/Equity Score",
+    "Short Interest",
+    "52W High",
+    "Target Price",
+    POTENTIAL_STOCK_COLUMN,
     "Price",
     "Change",
     VOLUME_COLUMN,

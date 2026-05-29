@@ -11,8 +11,10 @@ COLUMN_ALIASES = {
     "P/FCF": "P/FCF",
     "EPS growth past 5 years": "EPS Past 5Y",
     "EPS past 5Y": "EPS Past 5Y",
+    "EPS Q/Q": "EPS Quarter Over Quarter",
     "Sales growth past 5 years": "Sales Past 5Y",
     "Sales past 5Y": "Sales Past 5Y",
+    "Sales Q/Q": "Sales Quarter Over Quarter",
     "Return on Equity": "ROE",
     "Return on Investments": "ROIC",
     "ROI": "ROIC",
@@ -20,6 +22,9 @@ COLUMN_ALIASES = {
     "Debt/Eq": "Debt/Equity",
     "Net Profit Margin": "Profit Margin",
     "Profit M": "Profit Margin",
+    "Oper M": "Operating Margin",
+    "Float Short": "Short Interest",
+    "Short Float": "Short Interest",
 }
 NUMERIC_COLUMNS = [
     MARKET_CAP_COLUMN,
@@ -30,12 +35,25 @@ NUMERIC_COLUMNS = [
     "ROE",
     "ROIC",
     "Profit Margin",
+    "Operating Margin",
     "Debt/Equity",
+    "Short Interest",
+    "52W High",
+    "Target Price",
     "Price",
     "Change",
     VOLUME_COLUMN,
 ]
-PERCENT_COLUMNS = ["EPS Past 5Y", "Sales Past 5Y", "ROIC"]
+PERCENT_COLUMNS = [
+    "EPS Past 5Y",
+    "EPS Quarter Over Quarter",
+    "Sales Past 5Y",
+    "Sales Quarter Over Quarter",
+    "ROIC",
+    "Operating Margin",
+    "Short Interest",
+    "52W High",
+]
 NON_SCORE_METRIC_COLUMNS = [
     MARKET_CAP_COLUMN,
     "Forward P/E",
@@ -47,7 +65,13 @@ NON_SCORE_METRIC_COLUMNS = [
     "ROE",
     "ROIC",
     "Profit Margin",
+    "Operating Margin",
     "Debt/Equity",
+    "EPS Quarter Over Quarter",
+    "Sales Quarter Over Quarter",
+    "Short Interest",
+    "52W High",
+    "Target Price",
 ]
 
 
@@ -58,19 +82,24 @@ class FundamentalDataNormalizer:
 
         normalized_data = data.copy()
         normalized_data = normalized_data.rename(columns=COLUMN_ALIASES)
+        raw_data = normalized_data.copy()
         for column in NUMERIC_COLUMNS:
             if column in normalized_data.columns:
                 normalized_data[column] = to_numeric_series(
                     normalized_data[column])
         for column in PERCENT_COLUMNS:
             if column in normalized_data.columns:
-                normalized_data[column] = (
-                    to_numeric_series(normalized_data[column]) / 100
-                )
+                normalized_data[column] = self.normalize_percent_series(
+                    raw_data[column])
         for column in NON_SCORE_METRIC_COLUMNS:
             if column in normalized_data.columns:
                 normalized_data[column] = normalized_data[column].round(4)
         return normalized_data
+
+    def normalize_percent_series(self, data: pd.Series) -> pd.Series:
+        numeric_data = to_numeric_series(data)
+        has_percent_symbol = data.astype(str).str.contains("%", regex=False)
+        return numeric_data.where(~has_percent_symbol, numeric_data / 100)
 
     def remove_invalid_rows(self, data: pd.DataFrame) -> pd.DataFrame:
         if data.empty:

@@ -14,6 +14,7 @@ def test_screener_request_normalizes_api_values_and_bounds_numbers():
             "limit": "250",
             "offset": "-10",
             "tickers": " aapl, MSFT, aapl, , nvda ",
+            "potential_stock": "on",
         }
     )
 
@@ -23,6 +24,7 @@ def test_screener_request_normalizes_api_values_and_bounds_numbers():
     assert request.limit == 100
     assert request.offset == 0
     assert request.tickers == ["AAPL", "MSFT", "NVDA"]
+    assert request.potential_stock is True
 
 
 def test_screener_request_uses_defaults_for_invalid_values():

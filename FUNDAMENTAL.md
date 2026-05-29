@@ -41,6 +41,23 @@
 
 ---
 
+## 額外 Finviz 欄位
+
+除咗評分用嘅核心基本面欄位，系統亦會由 Finviz Custom Screener 攞以下欄位，主要用嚟顯示同判斷 `Potential Stock`：
+
+| 系統欄位                     | Finviz 欄位    | 解讀                                      |
+| ---------------------------- | -------------- | ----------------------------------------- |
+| `EPS Quarter Over Quarter`   | `EPS Q/Q`      | 最近季度 EPS 同比增長                     |
+| `Sales Quarter Over Quarter` | `Sales Q/Q`    | 最近季度收入同比增長                      |
+| `Operating Margin`           | `Oper M`       | 營業利潤率，反映營運槓桿同成本控制        |
+| `Short Interest`             | `Short Float`  | short float，粗略反映 short squeeze setup |
+| `52W High`                   | `52W High`     | 股價距離 52-week high 嘅相對距離          |
+| `Target Price`               | `Target Price` | 分析師目標價                              |
+
+百分比欄位會統一用 ratio 儲存，例如 `12.5%` 會儲成 `0.125`。如果 Finvizfinance 已經回傳 `0.125` 呢類 ratio，系統會直接保留，唔會再除 100。
+
+---
+
 ## 總分權重
 
 現時基本面權重會覆蓋增長、質素、估值、規模同負債風險：
@@ -87,6 +104,28 @@ Fundamental Score =
 
 - `ROIC`、`EPS Past 5Y`、`PEG` 三個核心指標入面，至少要有 2 個有效數值；如果少過 2 個，`Fundamental Score` 最高只會係 60 分。
 - `ROIC Score`、`EPS Past 5Y Score`、`PEG Score` 三個核心分數平均要至少 70；如果低過 70，`Fundamental Score` 最高只會係 75 分。
+
+---
+
+## Potential Stock 點計？
+
+`Potential Stock` 係 boolean filter，唔係 `Fundamental Score` 嘅一部分。佢用嚟搵「市場預期可能太低，但近期基本面開始轉強」嘅股票。
+
+現時要同時符合：
+
+| 條件                   | 門檻                               |
+| ---------------------- | ---------------------------------- |
+| EPS 季度增長           | `EPS Quarter Over Quarter >= 10%`  |
+| 收入季度增長           | `Sales Quarter Over Quarter >= 5%` |
+| 經營槓桿               | EPS 季度增長 > 收入季度增長        |
+| 估值未離地             | `Forward P/E <= 35` 或 `PEG <= 2`  |
+| 營業利潤率             | `Operating Margin >= 8%`           |
+| short setup            | `Short Interest >= 3%`             |
+| 未離 52-week high 太遠 | `52W High >= -25%`，缺值當通過     |
+
+如果相關資料缺失，`Potential Stock` 會當 `False`，唔會用 `NULL`。API 可以用 `potential_stock=true` 篩走非潛力股。
+
+呢個 filter 係 Finviz 資料做到嘅 proxy，唔等於真正 analyst revision model。佢冇直接睇 30-90 日 EPS estimate revision、訂單 backlog、指引同 SEC filing；中咗 filter 只代表值得再深挖。
 
 ---
 

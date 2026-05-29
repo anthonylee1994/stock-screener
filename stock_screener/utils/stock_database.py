@@ -160,6 +160,7 @@ class StockDatabase:
         search: str = "",
         tickers: list[str] | None = None,
         offset: int = 0,
+        potential_stock: bool = False,
     ) -> tuple[pd.DataFrame, int]:
         with self.connect() as connection:
             if tickers:
@@ -187,6 +188,7 @@ class StockDatabase:
                     ascend=ascend,
                     limit=limit,
                     offset=offset,
+                    potential_stock=potential_stock,
                 )
 
         logger.info(
@@ -208,12 +210,14 @@ class StockDatabase:
         ascend: bool,
         limit: int,
         offset: int,
+        potential_stock: bool = False,
     ) -> tuple[pd.DataFrame, int]:
         search_column, total_count = self.resolve_search_column_and_count(
             connection=connection,
             sector=sector,
             market_cap=market_cap,
             search=search,
+            potential_stock=potential_stock,
         )
         query, params = self.query_builder.build_screener_query(
             sector=sector,
@@ -223,6 +227,7 @@ class StockDatabase:
             ascend=ascend,
             limit=limit,
             offset=offset,
+            potential_stock=potential_stock,
             search_column=search_column,
         )
         return self.read_dataframe(connection, query, params), total_count
@@ -233,6 +238,7 @@ class StockDatabase:
         sector: str,
         market_cap: str,
         search: str,
+        potential_stock: bool = False,
     ) -> tuple[str | None, int]:
         normalized_search = str(search).strip()
         if not normalized_search:
@@ -240,6 +246,7 @@ class StockDatabase:
                 sector=sector,
                 market_cap=market_cap,
                 search="",
+                potential_stock=potential_stock,
             )
             return None, self.read_count(connection, query, params)
 
@@ -248,6 +255,7 @@ class StockDatabase:
                 sector=sector,
                 market_cap=market_cap,
                 search=normalized_search,
+                potential_stock=potential_stock,
                 search_column=search_column,
             )
             total_count = self.read_count(connection, query, params)

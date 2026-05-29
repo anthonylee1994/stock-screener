@@ -15,11 +15,13 @@ def test_build_screener_query_includes_filters_search_sort_and_pagination():
         ascend=True,
         limit=25,
         offset=50,
+        potential_stock=True,
     )
 
     assert '"Sector" = ?' in query
     assert '"Market Cap" >= ?' in query
     assert '"Market Cap" < ?' in query
+    assert '"Potential Stock" = 1' in query
     assert '(LOWER("Ticker") LIKE ? ESCAPE' in query
     assert 'LOWER("Company") LIKE ? ESCAPE' in query
     assert 'ORDER BY "Volume" IS NULL, "Volume" ASC, "Ticker" ASC' in query

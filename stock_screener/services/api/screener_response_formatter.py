@@ -4,6 +4,7 @@ from stock_screener.utils.screener_rules import (
     CHANGE_PERCENT_COLUMN,
     FUNDAMENTAL_SCORE_COLUMN,
     MARKET_CAP_COLUMN,
+    POTENTIAL_STOCK_COLUMN,
     TECHNICAL_SCORE_COLUMN,
     TOTAL_SCORE_COLUMN,
     VOLUME_COLUMN,
@@ -22,6 +23,13 @@ FUNDAMENTAL_FIELDS = {
     "roic": "ROIC",
     "profit_margin": "Profit Margin",
     "debt_equity": "Debt/Equity",
+    "eps_quarter_over_quarter": "EPS Quarter Over Quarter",
+    "sales_quarter_over_quarter": "Sales Quarter Over Quarter",
+    "operating_margin": "Operating Margin",
+    "short_interest": "Short Interest",
+    "high_52w": "52W High",
+    "target_price": "Target Price",
+    "potential_stock": POTENTIAL_STOCK_COLUMN,
     "market_cap_score": "Market Cap Score",
     "forward_pe_score": "Forward P/E Score",
     "peg_score": "PEG Score",
@@ -77,6 +85,7 @@ def format_record(row: pd.Series) -> dict:
         ),
         "volume": clean_value(row.get(VOLUME_COLUMN)),
         "total_score": clean_value(row.get(TOTAL_SCORE_COLUMN)),
+        "potential_stock": clean_bool(row.get(POTENTIAL_STOCK_COLUMN)),
         "fundamental": format_fields(row, FUNDAMENTAL_FIELDS),
         "technical": format_fields(row, TECHNICAL_FIELDS),
     }
@@ -93,6 +102,12 @@ def clean_value(value):
     if pd.isna(value):
         return None
     return value
+
+
+def clean_bool(value):
+    if pd.isna(value):
+        return None
+    return bool(value)
 
 
 def first_valid_value(*values):

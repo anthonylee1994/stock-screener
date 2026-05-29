@@ -28,6 +28,7 @@ class ScreenerService:
             order=request.order,
             ascend=request.ascend,
             offset=request.offset,
+            potential_stock=request.potential_stock,
         )
         has_more = len(data) > request.limit
         page_data = data.head(request.limit)

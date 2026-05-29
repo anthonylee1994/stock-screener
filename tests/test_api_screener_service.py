@@ -46,6 +46,7 @@ def test_screener_service_requests_one_extra_row_and_formats_page():
             "ascend": "true",
             "limit": 2,
             "offset": 4,
+            "potential_stock": "true",
         }
     )
 
@@ -59,6 +60,7 @@ def test_screener_service_requests_one_extra_row_and_formats_page():
             "order": TOTAL_SCORE_COLUMN,
             "ascend": True,
             "offset": 4,
+            "potential_stock": True,
         }
     ]
     assert response["count"] == 5
