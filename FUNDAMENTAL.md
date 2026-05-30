@@ -112,17 +112,20 @@ Fundamental Score =
 
 `Potential Stock` 係 boolean filter，唔係 `Fundamental Score` 嘅一部分。佢用嚟搵「市場預期可能太低，但近期基本面開始轉強」嘅股票。
 
-現時符合以下任一條件就會標記為 `Potential Stock`：
+現時符合以下完整條件先會標記為 `Potential Stock`：
 
-| 條件                  | 門檻                                 |
-| --------------------- | ------------------------------------ |
-| 低 P/S + 高收入增長   | `P/S < 10` 且 `Sales Past 5Y > 20%`  |
-| 高 P/S + 更高收入增長 | `P/S > 10` 且 `Sales Past 5Y > 25%`  |
-| 5 年 EPS 增長 + ROE   | `EPS Past 5Y > 15%` 且 `ROE > 15%`   |
-| ROE + 淨利率          | `ROE > 15%` 且 `Profit Margin > 20%` |
-| 高毛利率              | `Gross Margin > 60%`                 |
+```text
+(ROE > 15%)
+AND
+(EPS Past 5Y > 15% OR Sales Past 5Y > 20%)
+```
 
-如果相關資料缺失，`Potential Stock` 會當 `False`，唔會用 `NULL`。API 可以用 `potential_stock=true` 篩走非潛力股。
+| 條件       | 門檻                                         |
+| ---------- | -------------------------------------------- |
+| 營運質素   | `ROE > 15%`                                  |
+| 成長二選一 | `EPS Past 5Y > 15%` 或 `Sales Past 5Y > 20%` |
+
+如果相關資料缺失，`Potential Stock` 會當 `False`，唔會用 `NULL`。系統內部會將百分比欄位儲存成 ratio，例如 `15%` 係 `0.15`。API 可以用 `potential_stock=true` 篩走非潛力股。
 
 呢個 filter 係 Finviz 資料做到嘅 proxy，唔等於真正 analyst revision model。佢冇直接睇 30-90 日 EPS estimate revision、訂單 backlog、指引同 SEC filing；中咗 filter 只代表值得再深挖。
 

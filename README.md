@@ -268,17 +268,14 @@ screened stock pool:
 `stock_screener/services/fundamental/fundamental_score_calculator.py`.
 
 `Potential Stock` is a separate boolean flag, not part of `Fundamental Score`.
-It is true when any of these Finviz-based rules match:
+It is true when both the quality rule and one growth rule match:
 
-- `P/S < 10` and `Sales Past 5Y > 20%`
-- `P/S > 10` and `Sales Past 5Y > 25%`
-- `EPS Past 5Y > 15%` and `ROE > 15%`
-- `ROE > 15%` and `Profit Margin > 20%`
-- `Gross Margin > 60%`
+- Quality: `ROE > 15%`
+- Growth: `EPS Past 5Y > 15%` or `Sales Past 5Y > 20%`
 
 Missing required potential-stock inputs are treated as false. Percent-like
-Finviz fields are stored as ratios, so `12.5%` is returned as `0.125`.
-More detail is in `FUNDAMENTAL.md`.
+Finviz fields, including `ROE`, are stored as ratios, so `12.5%` is returned
+as `0.125`. More detail is in `FUNDAMENTAL.md`.
 
 Technical scoring follows `TECHNICAL.md`:
 

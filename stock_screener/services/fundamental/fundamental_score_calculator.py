@@ -32,13 +32,9 @@ INSUFFICIENT_CORE_SCORE_CAP = 60.0
 CORE_SCORE_COLUMNS = ("ROIC Score", "EPS Past 5Y Score", "PEG Score")
 MIN_CORE_AVERAGE_SCORE = 70.0
 WEAK_CORE_SCORE_CAP = 75.0
-MAX_POTENTIAL_LOW_PS = 10.0
-MIN_POTENTIAL_LOW_PS_SALES_PAST_5Y = 0.20
-MIN_POTENTIAL_HIGH_PS_SALES_PAST_5Y = 0.25
 MIN_POTENTIAL_EPS_PAST_5Y = 0.15
-MIN_POTENTIAL_ROE = 15.0
-MIN_POTENTIAL_PROFIT_MARGIN = 20.0
-MIN_POTENTIAL_GROSS_MARGIN = 0.60
+MIN_POTENTIAL_SALES_PAST_5Y = 0.20
+MIN_POTENTIAL_ROE = 0.15
 
 
 class FundamentalScoreCalculator:
@@ -150,37 +146,16 @@ class FundamentalScoreCalculator:
         return core_scores.mean(axis=1).fillna(0.0)
 
     def calculate_potential_stock(self, data: pd.DataFrame) -> pd.Series:
-        ps = self.metric(data, "P/S")
         sales_past_5y = self.metric(data, "Sales Past 5Y")
         eps_past_5y = self.metric(data, "EPS Past 5Y")
         roe = self.metric(data, "ROE")
-        profit_margin = self.metric(data, "Profit Margin")
-        gross_margin = self.metric(data, "Gross Margin")
 
-        low_ps_sales_growth = (ps < MAX_POTENTIAL_LOW_PS) & (
-            sales_past_5y > MIN_POTENTIAL_LOW_PS_SALES_PAST_5Y
+        high_roe = roe > MIN_POTENTIAL_ROE
+        strong_growth = (eps_past_5y > MIN_POTENTIAL_EPS_PAST_5Y) | (
+            sales_past_5y > MIN_POTENTIAL_SALES_PAST_5Y
         )
-        high_ps_sales_growth = (ps > MAX_POTENTIAL_LOW_PS) & (
-            sales_past_5y > MIN_POTENTIAL_HIGH_PS_SALES_PAST_5Y
-        )
-        eps_growth = eps_past_5y > MIN_POTENTIAL_EPS_PAST_5Y
-        eps_growth_with_roe = eps_growth & (roe > MIN_POTENTIAL_ROE)
-        high_roe_high_margin = (roe > MIN_POTENTIAL_ROE) & (
-            profit_margin > MIN_POTENTIAL_PROFIT_MARGIN
-        )
-        high_gross_margin = gross_margin > MIN_POTENTIAL_GROSS_MARGIN
 
-        return (
-            (
-                low_ps_sales_growth
-                | high_ps_sales_growth
-                | eps_growth_with_roe
-                | high_roe_high_margin
-                | high_gross_margin
-            )
-            .fillna(False)
-            .astype(bool)
-        )
+        return (high_roe & strong_growth).fillna(False).astype(bool)
 
     def metric(self, data: pd.DataFrame, column: str) -> pd.Series:
         if column not in data.columns:
