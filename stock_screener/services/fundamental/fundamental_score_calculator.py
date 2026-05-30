@@ -35,6 +35,8 @@ WEAK_CORE_SCORE_CAP = 75.0
 MIN_POTENTIAL_EPS_PAST_5Y = 0.15
 MIN_POTENTIAL_SALES_PAST_5Y = 0.20
 MIN_POTENTIAL_ROE = 0.15
+MAX_POTENTIAL_PEG = 1.0
+MAX_POTENTIAL_FORWARD_PE = 30.0
 
 
 class FundamentalScoreCalculator:
@@ -149,13 +151,20 @@ class FundamentalScoreCalculator:
         sales_past_5y = self.metric(data, "Sales Past 5Y")
         eps_past_5y = self.metric(data, "EPS Past 5Y")
         roe = self.metric(data, "ROE")
+        peg = self.metric(data, "PEG")
+        forward_pe = self.metric(data, "Forward P/E")
 
         high_roe = roe > MIN_POTENTIAL_ROE
         strong_growth = (eps_past_5y > MIN_POTENTIAL_EPS_PAST_5Y) | (
             sales_past_5y > MIN_POTENTIAL_SALES_PAST_5Y
         )
+        reasonable_valuation = (peg < MAX_POTENTIAL_PEG) & (
+            forward_pe < MAX_POTENTIAL_FORWARD_PE
+        )
 
-        return (high_roe & strong_growth).fillna(False).astype(bool)
+        return (
+            high_roe & strong_growth & reasonable_valuation
+        ).fillna(False).astype(bool)
 
     def metric(self, data: pd.DataFrame, column: str) -> pd.Series:
         if column not in data.columns:

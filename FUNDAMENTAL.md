@@ -118,12 +118,15 @@ Fundamental Score =
 (ROE > 15%)
 AND
 (EPS Past 5Y > 15% OR Sales Past 5Y > 20%)
+AND
+(PEG < 1 AND Forward P/E < 30)
 ```
 
 | 條件       | 門檻                                         |
 | ---------- | -------------------------------------------- |
 | 營運質素   | `ROE > 15%`                                  |
 | 成長二選一 | `EPS Past 5Y > 15%` 或 `Sales Past 5Y > 20%` |
+| 估值       | `PEG < 1` 且 `Forward P/E < 30`              |
 
 如果相關資料缺失，`Potential Stock` 會當 `False`，唔會用 `NULL`。系統內部會將百分比欄位儲存成 ratio，例如 `15%` 係 `0.15`。API 可以用 `potential_stock=true` 篩走非潛力股。
 
