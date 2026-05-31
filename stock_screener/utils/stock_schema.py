@@ -45,6 +45,7 @@ STOCKS_COLUMNS = {
     "Debt/Equity": "REAL",
     "Debt/Equity Score": "REAL",
     "Short Interest": "REAL",
+    "200-Day Simple Moving Average": "REAL",
     "52W High": "REAL",
     "Target Price": "REAL",
     POTENTIAL_STOCK_COLUMN: "INTEGER",

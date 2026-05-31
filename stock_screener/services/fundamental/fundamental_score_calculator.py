@@ -33,10 +33,12 @@ CORE_SCORE_COLUMNS = ("ROIC Score", "EPS Past 5Y Score", "PEG Score")
 MIN_CORE_AVERAGE_SCORE = 70.0
 WEAK_CORE_SCORE_CAP = 75.0
 MIN_POTENTIAL_EPS_PAST_5Y = 0.15
-MIN_POTENTIAL_SALES_PAST_5Y = 0.20
+MIN_POTENTIAL_SALES_PAST_5Y = 0.15
 MIN_POTENTIAL_ROE = 0.15
+MIN_POTENTIAL_MARKET_CAP = 2_000_000_000
+MIN_POTENTIAL_PROFIT_MARGIN = 0.0
+MIN_POTENTIAL_VOLUME = 500_000
 MAX_POTENTIAL_PEG = 1.0
-MAX_POTENTIAL_FORWARD_PE = 30.0
 
 
 class FundamentalScoreCalculator:
@@ -148,22 +150,33 @@ class FundamentalScoreCalculator:
         return core_scores.mean(axis=1).fillna(0.0)
 
     def calculate_potential_stock(self, data: pd.DataFrame) -> pd.Series:
-        sales_past_5y = self.metric(data, "Sales Past 5Y")
+        market_cap = self.metric(data, MARKET_CAP_COLUMN)
         eps_past_5y = self.metric(data, "EPS Past 5Y")
+        sales_past_5y = self.metric(data, "Sales Past 5Y")
+        profit_margin = self.metric(data, "Profit Margin")
         roe = self.metric(data, "ROE")
         peg = self.metric(data, "PEG")
-        forward_pe = self.metric(data, "Forward P/E")
+        volume = self.metric(data, "Volume")
+        sma200 = self.metric(data, "200-Day Simple Moving Average")
 
-        high_roe = roe > MIN_POTENTIAL_ROE
+        mid_or_larger = market_cap >= MIN_POTENTIAL_MARKET_CAP
         strong_growth = (eps_past_5y > MIN_POTENTIAL_EPS_PAST_5Y) | (
             sales_past_5y > MIN_POTENTIAL_SALES_PAST_5Y
         )
-        reasonable_valuation = (peg < MAX_POTENTIAL_PEG) & (
-            forward_pe < MAX_POTENTIAL_FORWARD_PE
-        )
+        positive_profit_margin = profit_margin > MIN_POTENTIAL_PROFIT_MARGIN
+        high_roe = roe > MIN_POTENTIAL_ROE
+        cheap_growth = peg < MAX_POTENTIAL_PEG
+        liquid_enough = volume >= MIN_POTENTIAL_VOLUME
+        above_sma200 = sma200 > 0
 
         return (
-            high_roe & strong_growth & reasonable_valuation
+            mid_or_larger
+            & strong_growth
+            & positive_profit_margin
+            & cheap_growth
+            & high_roe
+            & liquid_enough
+            & above_sma200
         ).fillna(False).astype(bool)
 
     def metric(self, data: pd.DataFrame, column: str) -> pd.Series:

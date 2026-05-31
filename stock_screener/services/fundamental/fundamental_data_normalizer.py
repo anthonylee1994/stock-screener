@@ -26,6 +26,7 @@ COLUMN_ALIASES = {
     "Oper M": "Operating Margin",
     "Float Short": "Short Interest",
     "Short Float": "Short Interest",
+    "SMA200": "200-Day Simple Moving Average",
 }
 NUMERIC_COLUMNS = [
     MARKET_CAP_COLUMN,
@@ -40,6 +41,7 @@ NUMERIC_COLUMNS = [
     "Operating Margin",
     "Debt/Equity",
     "Short Interest",
+    "200-Day Simple Moving Average",
     "52W High",
     "Target Price",
     "Price",
@@ -57,6 +59,7 @@ PERCENT_COLUMNS = [
     "Gross Margin",
     "Operating Margin",
     "Short Interest",
+    "200-Day Simple Moving Average",
     "52W High",
 ]
 NON_SCORE_METRIC_COLUMNS = [
@@ -76,6 +79,7 @@ NON_SCORE_METRIC_COLUMNS = [
     "EPS Quarter Over Quarter",
     "Sales Quarter Over Quarter",
     "Short Interest",
+    "200-Day Simple Moving Average",
     "52W High",
     "Target Price",
 ]

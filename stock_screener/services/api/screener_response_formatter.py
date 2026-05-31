@@ -28,6 +28,7 @@ FUNDAMENTAL_FIELDS = {
     "sales_quarter_over_quarter": "Sales Quarter Over Quarter",
     "operating_margin": "Operating Margin",
     "short_interest": "Short Interest",
+    "sma200": "200-Day Simple Moving Average",
     "high_52w": "52W High",
     "target_price": "Target Price",
     "potential_stock": POTENTIAL_STOCK_COLUMN,

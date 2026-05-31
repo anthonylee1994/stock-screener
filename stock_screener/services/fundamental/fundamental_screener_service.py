@@ -44,6 +44,7 @@ DEFAULT_COLUMNS = [
     "Debt/Equity",
     "Debt/Equity Score",
     "Short Interest",
+    "200-Day Simple Moving Average",
     "52W High",
     "Target Price",
     POTENTIAL_STOCK_COLUMN,

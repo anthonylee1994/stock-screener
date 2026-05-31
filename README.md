@@ -11,8 +11,8 @@ total score.
   market cap metrics.
 - Stores extra Finviz operating, short-interest, 52-week-high, and target-price
   fields for potential-stock screening.
-- Exposes a `potential_stock` boolean filter for stocks with recent growth,
-  operating leverage, reasonable valuation, and short-interest setup.
+- Exposes a `potential_stock` boolean filter that mirrors the current Finviz
+  screen for mid-cap-or-larger, profitable, liquid PEG growth stocks.
 - Calculates technical scores from long-, mid-, and short-term momentum
   indicators.
 - Stores the full screener result in SQLite so API
@@ -268,11 +268,16 @@ screened stock pool:
 `stock_screener/services/fundamental/fundamental_score_calculator.py`.
 
 `Potential Stock` is a separate boolean flag, not part of `Fundamental Score`.
-It is true when the quality, growth, and valuation rules all match:
+It mirrors the current Finviz screen and is true when all rules match:
 
+- Size: `Market Cap >= 2B`
 - Quality: `ROE > 15%`
-- Growth: `EPS Past 5Y > 15%` or `Sales Past 5Y > 20%`
-- Valuation: `PEG < 1` and `Forward P/E < 30`
+- Profitability: `Profit Margin > 0`
+- Growth: `EPS Past 5Y > 15%` or `Sales Past 5Y > 15%`
+- Valuation: `PEG < 1`
+- Liquidity: `Volume >= 500K`
+- Trend: `200-Day Simple Moving Average > 0`, matching Finviz
+  `Price above SMA200`.
 
 Missing required potential-stock inputs are treated as false. Percent-like
 Finviz fields, including `ROE`, are stored as ratios, so `12.5%` is returned

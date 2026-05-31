@@ -71,5 +71,6 @@ def test_fundamental_screener_client_requests_potential_stock_columns():
     assert 30 in CUSTOM_COLUMNS
     assert 39 in CUSTOM_COLUMNS
     assert 40 in CUSTOM_COLUMNS
+    assert 54 in CUSTOM_COLUMNS
     assert 57 in CUSTOM_COLUMNS
     assert 69 in CUSTOM_COLUMNS

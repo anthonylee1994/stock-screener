@@ -35,6 +35,7 @@ def test_fundamental_data_normalizer_rounds_non_score_metrics():
                 "Oper M": "12.5%",
                 "Debt/Equity": "0.876",
                 "Short Float": "3.5%",
+                "SMA200": "4.5%",
                 "52W High": "-8%",
                 "Target Price": "250.50",
             }
@@ -59,6 +60,7 @@ def test_fundamental_data_normalizer_rounds_non_score_metrics():
     assert normalized.loc[0, "Operating Margin"] == 0.125
     assert normalized.loc[0, "Debt/Equity"] == 0.876
     assert normalized.loc[0, "Short Interest"] == 0.035
+    assert normalized.loc[0, "200-Day Simple Moving Average"] == 0.045
     assert normalized.loc[0, "52W High"] == -0.08
     assert normalized.loc[0, "Target Price"] == 250.5
 
@@ -183,112 +185,103 @@ def test_fundamental_score_weights_are_balanced_and_sum_to_one():
 
 def test_fundamental_score_calculator_marks_potential_stock_setup():
     calculator = FundamentalScoreCalculator()
+
+    def stock_data(ticker, **overrides):
+        data = {
+            "Ticker": ticker,
+            "Market Cap": 2_500_000_000,
+            "EPS Past 5Y": 0.16,
+            "Profit Margin": 0.01,
+            "ROE": 0.16,
+            "PEG": 0.99,
+            "Volume": 500_001,
+            "200-Day Simple Moving Average": 0.01,
+        }
+        data.update(overrides)
+        return data
+
     data = pd.DataFrame(
         [
-            {
-                "Ticker": "EPS_GROWTH",
-                "EPS Past 5Y": 0.16,
-                "ROE": 0.16,
-                "PEG": 0.99,
-                "Forward P/E": 29.99,
-            },
-            {
-                "Ticker": "SALES_GROWTH",
-                "Sales Past 5Y": 0.21,
-                "ROE": 0.16,
-                "PEG": 0.99,
-                "Forward P/E": 29.99,
-            },
-            {
-                "Ticker": "BOTH_GROWTH",
-                "EPS Past 5Y": 0.16,
-                "Sales Past 5Y": 0.26,
-                "ROE": 0.16,
-                "PEG": 0.99,
-                "Forward P/E": 29.99,
-            },
-            {
-                "Ticker": "GROWTH_ONLY",
-                "EPS Past 5Y": 0.16,
-                "Sales Past 5Y": 0.21,
-                "PEG": 0.99,
-                "Forward P/E": 29.99,
-            },
-            {
-                "Ticker": "ROE_ONLY",
-                "ROE": 0.16,
-                "PEG": 0.99,
-                "Forward P/E": 29.99,
-            },
-            {
-                "Ticker": "MARGIN_IRRELEVANT",
-                "EPS Past 5Y": 0.16,
-                "ROE": 0.16,
-                "PEG": 0.99,
-                "Forward P/E": 29.99,
-                "Profit Margin": 0.01,
-            },
-            {
-                "Ticker": "PEG_AT_THRESHOLD",
-                "EPS Past 5Y": 0.16,
-                "ROE": 0.16,
-                "PEG": 1.0,
-                "Forward P/E": 29.99,
-            },
-            {
-                "Ticker": "PEG_ABOVE_THRESHOLD",
-                "EPS Past 5Y": 0.16,
-                "ROE": 0.16,
-                "PEG": 1.01,
-                "Forward P/E": 29.99,
-            },
-            {
-                "Ticker": "FORWARD_PE_AT_THRESHOLD",
-                "EPS Past 5Y": 0.16,
-                "ROE": 0.16,
-                "PEG": 0.99,
-                "Forward P/E": 30.0,
-            },
-            {
-                "Ticker": "FORWARD_PE_ABOVE_THRESHOLD",
-                "EPS Past 5Y": 0.16,
-                "ROE": 0.16,
-                "PEG": 0.99,
-                "Forward P/E": 30.01,
-            },
-            {
-                "Ticker": "MISSING_VALUATION",
-                "EPS Past 5Y": 0.16,
-                "ROE": 0.16,
-            },
-            {
-                "Ticker": "SALES_BELOW_THRESHOLD",
-                "Sales Past 5Y": 0.20,
-                "ROE": 0.16,
-                "PEG": 0.99,
-                "Forward P/E": 29.99,
-            },
-            {
-                "Ticker": "EPS_BELOW_THRESHOLD",
-                "EPS Past 5Y": 0.15,
-                "ROE": 0.16,
-                "PEG": 0.99,
-                "Forward P/E": 29.99,
-            },
-            {
-                "Ticker": "ROE_AT_THRESHOLD",
-                "EPS Past 5Y": 0.16,
-                "ROE": 0.15,
-                "PEG": 0.99,
-                "Forward P/E": 29.99,
-            },
-            {
-                "Ticker": "ROE_BELOW_THRESHOLD",
-                "EPS Past 5Y": 0.16,
-                "ROE": 0.1499,
-                "PEG": 0.99,
-                "Forward P/E": 29.99,
-            },
+            stock_data(
+                "EPS_GROWTH",
+                **{"Market Cap": 2_000_000_000, "Volume": 500_000},
+            ),
+            stock_data(
+                "SALES_GROWTH",
+                **{"EPS Past 5Y": pd.NA, "Sales Past 5Y": 0.16},
+            ),
+            stock_data(
+                "BOTH_GROWTH",
+                **{"Sales Past 5Y": 0.26, "Forward P/E": 29.99},
+            ),
+            stock_data(
+                "GROWTH_ONLY",
+                **{"ROE": pd.NA},
+            ),
+            stock_data(
+                "ROE_ONLY",
+                **{"EPS Past 5Y": pd.NA, "ROE": 0.16},
+            ),
+            stock_data(
+                "MISSING_PROFIT_MARGIN",
+                **{"Profit Margin": pd.NA},
+            ),
+            stock_data(
+                "NEGATIVE_PROFIT_MARGIN",
+                **{"Profit Margin": -0.01},
+            ),
+            stock_data(
+                "PEG_AT_THRESHOLD",
+                **{"PEG": 1.0},
+            ),
+            stock_data(
+                "PEG_ABOVE_THRESHOLD",
+                **{"PEG": 1.01},
+            ),
+            stock_data(
+                "FORWARD_PE_IGNORED",
+                **{"Forward P/E": 300.0},
+            ),
+            stock_data(
+                "MISSING_VALUATION",
+                **{"PEG": pd.NA},
+            ),
+            stock_data(
+                "SMALL_MARKET_CAP",
+                **{"Market Cap": 1_999_999_999},
+            ),
+            stock_data(
+                "LOW_VOLUME",
+                **{"Volume": 499_999},
+            ),
+            stock_data(
+                "EPS_BELOW_THRESHOLD",
+                **{"EPS Past 5Y": 0.15},
+            ),
+            stock_data(
+                "SALES_AT_THRESHOLD",
+                **{"EPS Past 5Y": pd.NA, "Sales Past 5Y": 0.15},
+            ),
+            stock_data(
+                "ROE_AT_THRESHOLD",
+                **{"ROE": 0.15},
+            ),
+            stock_data(
+                "ROE_BELOW_THRESHOLD",
+                **{"ROE": 0.1499},
+            ),
+            stock_data(
+                "MISSING_SMA200",
+                **{"200-Day Simple Moving Average": pd.NA},
+            ),
+            stock_data(
+                "SMA200_AT_THRESHOLD",
+                **{"200-Day Simple Moving Average": 0.0},
+            ),
+            stock_data(
+                "SMA200_BELOW_THRESHOLD",
+                **{"200-Day Simple Moving Average": -0.0001},
+            ),
         ]
     )
 
@@ -304,16 +297,21 @@ def test_fundamental_score_calculator_marks_potential_stock_setup():
         "BOTH_GROWTH": True,
         "GROWTH_ONLY": False,
         "ROE_ONLY": False,
-        "MARGIN_IRRELEVANT": True,
+        "MISSING_PROFIT_MARGIN": False,
+        "NEGATIVE_PROFIT_MARGIN": False,
         "PEG_AT_THRESHOLD": False,
         "PEG_ABOVE_THRESHOLD": False,
-        "FORWARD_PE_AT_THRESHOLD": False,
-        "FORWARD_PE_ABOVE_THRESHOLD": False,
+        "FORWARD_PE_IGNORED": True,
         "MISSING_VALUATION": False,
-        "SALES_BELOW_THRESHOLD": False,
+        "SMALL_MARKET_CAP": False,
+        "LOW_VOLUME": False,
         "EPS_BELOW_THRESHOLD": False,
+        "SALES_AT_THRESHOLD": False,
         "ROE_AT_THRESHOLD": False,
         "ROE_BELOW_THRESHOLD": False,
+        "MISSING_SMA200": False,
+        "SMA200_AT_THRESHOLD": False,
+        "SMA200_BELOW_THRESHOLD": False,
     }
 
 

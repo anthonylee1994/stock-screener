@@ -115,18 +115,30 @@ Fundamental Score =
 現時符合以下完整條件先會標記為 `Potential Stock`：
 
 ```text
+(Market Cap >= 2B)
+AND
+(EPS Past 5Y > 15% OR Sales Past 5Y > 15%)
+AND
+(Profit Margin > 0)
+AND
+(PEG < 1)
+AND
 (ROE > 15%)
 AND
-(EPS Past 5Y > 15% OR Sales Past 5Y > 20%)
+(Volume >= 500K)
 AND
-(PEG < 1 AND Forward P/E < 30)
+(Price above SMA200)
 ```
 
-| 條件       | 門檻                                         |
-| ---------- | -------------------------------------------- |
-| 營運質素   | `ROE > 15%`                                  |
-| 成長二選一 | `EPS Past 5Y > 15%` 或 `Sales Past 5Y > 20%` |
-| 估值       | `PEG < 1` 且 `Forward P/E < 30`              |
+| 條件     | 門檻                                         |
+| -------- | -------------------------------------------- |
+| 市值     | `Market Cap >= 2B`                           |
+| 成長     | `EPS Past 5Y > 15%` 或 `Sales Past 5Y > 15%` |
+| 盈利能力 | `Profit Margin > 0`                          |
+| 估值     | `PEG < 1`                                    |
+| 營運質素 | `ROE > 15%`                                  |
+| 流動性   | `Volume >= 500K`                             |
+| 趨勢     | `200-Day Simple Moving Average > 0`，等同 `Price above SMA200` |
 
 如果相關資料缺失，`Potential Stock` 會當 `False`，唔會用 `NULL`。系統內部會將百分比欄位儲存成 ratio，例如 `15%` 係 `0.15`。API 可以用 `potential_stock=true` 篩走非潛力股。
 

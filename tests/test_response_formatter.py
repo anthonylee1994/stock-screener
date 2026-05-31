@@ -21,6 +21,7 @@ def test_format_response_maps_records_and_pagination_metadata():
                 "Total Score": 88.8,
                 "Potential Stock": 1,
                 "Gross Margin": 0.65,
+                "200-Day Simple Moving Average": 0.02,
                 "Fundamental Score": 90.0,
                 "Technical Score": 87.0,
             }
@@ -45,6 +46,7 @@ def test_format_response_maps_records_and_pagination_metadata():
     assert response["data"][0]["potential_stock"] is True
     assert response["data"][0]["fundamental"]["potential_stock"] == 1
     assert response["data"][0]["fundamental"]["gross_margin"] == 0.65
+    assert response["data"][0]["fundamental"]["sma200"] == 0.02
     assert response["data"][0]["fundamental"]["fundamental_score"] == 90.0
     assert response["data"][0]["technical"]["technical_score"] == 87.0
 
