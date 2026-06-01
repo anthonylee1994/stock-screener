@@ -1,7 +1,11 @@
 import pandas as pd
 
 from stock_screener.services.common.series_normalizer import to_numeric_series
-from stock_screener.utils.screener_rules import MARKET_CAP_COLUMN, VOLUME_COLUMN
+from stock_screener.utils.screener_rules import (
+    MARKET_CAP_COLUMN,
+    TARGET_PRICE_UPSIDE_COLUMN,
+    VOLUME_COLUMN,
+)
 
 
 COLUMN_ALIASES = {
@@ -45,6 +49,7 @@ NUMERIC_COLUMNS = [
     "52W High",
     "Target Price",
     "Price",
+    TARGET_PRICE_UPSIDE_COLUMN,
     "Change",
     VOLUME_COLUMN,
 ]
@@ -82,6 +87,7 @@ NON_SCORE_METRIC_COLUMNS = [
     "200-Day Simple Moving Average",
     "52W High",
     "Target Price",
+    TARGET_PRICE_UPSIDE_COLUMN,
 ]
 
 
@@ -101,6 +107,11 @@ class FundamentalDataNormalizer:
             if column in normalized_data.columns:
                 normalized_data[column] = self.normalize_percent_series(
                     raw_data[column])
+        if {"Target Price", "Price"}.issubset(normalized_data.columns):
+            normalized_data[TARGET_PRICE_UPSIDE_COLUMN] = (
+                (normalized_data["Target Price"] - normalized_data["Price"])
+                / normalized_data["Price"].where(normalized_data["Price"] != 0)
+            )
         for column in NON_SCORE_METRIC_COLUMNS:
             if column in normalized_data.columns:
                 normalized_data[column] = normalized_data[column].round(4)

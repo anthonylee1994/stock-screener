@@ -6,6 +6,7 @@ from stock_screener.utils.screener_rules import (
     MARKET_CAP_COLUMN,
     MIN_VOLUME,
     POTENTIAL_STOCK_COLUMN,
+    TARGET_PRICE_UPSIDE_COLUMN,
     TECHNICAL_SCORE_COLUMN,
     TOTAL_SCORE_COLUMN,
     VOLUME_COLUMN,
@@ -48,6 +49,7 @@ STOCKS_COLUMNS = {
     "200-Day Simple Moving Average": "REAL",
     "52W High": "REAL",
     "Target Price": "REAL",
+    TARGET_PRICE_UPSIDE_COLUMN: "REAL",
     POTENTIAL_STOCK_COLUMN: "INTEGER",
     "Price": "REAL",
     CHANGE_PERCENT_COLUMN: "REAL",
@@ -78,6 +80,7 @@ STOCKS_INDEX_COLUMNS = {
     "total_score": TOTAL_SCORE_COLUMN,
     "change_percent": CHANGE_PERCENT_COLUMN,
     "volume": VOLUME_COLUMN,
+    "target_price_upside": TARGET_PRICE_UPSIDE_COLUMN,
     "potential_stock": POTENTIAL_STOCK_COLUMN,
 }
 STOCKS_SCREENER_SORT_INDEX_COLUMNS = {
@@ -87,6 +90,7 @@ STOCKS_SCREENER_SORT_INDEX_COLUMNS = {
     "total_score": TOTAL_SCORE_COLUMN,
     "change_percent": CHANGE_PERCENT_COLUMN,
     "volume": VOLUME_COLUMN,
+    "target_price_upside": TARGET_PRICE_UPSIDE_COLUMN,
 }
 
 

@@ -54,6 +54,7 @@
 | `Short Interest`             | `Short Float`  | short float，顯示用資料            |
 | `52W High`                   | `52W High`     | 股價距離 52-week high 嘅相對距離   |
 | `Target Price`               | `Target Price` | 分析師目標價                       |
+| `Target Price Upside` | 計算欄位 | `(Target Price - Price) / Price`，可用 `target_price_upside` 排序 |
 
 百分比欄位會統一用 ratio 儲存，例如 `12.5%` 會儲成 `0.125`。如果 Finvizfinance 已經回傳 `0.125` 呢類 ratio，系統會直接保留，唔會再除 100。
 

@@ -95,8 +95,35 @@ def test_normalize_sort_column_falls_back_to_market_cap():
     builder = StockScreenerQueryBuilder()
 
     assert builder.normalize_sort_column("Quote Volume") == "Volume"
+    assert (
+        builder.normalize_sort_column("target_price_upside")
+        == "Target Price Upside"
+    )
     assert builder.normalize_sort_column("unknown") == "Market Cap"
     assert builder.normalize_sort_column("Market Cap.") == "Market Cap"
+
+
+def test_build_screener_query_sorts_by_target_price_upside_expression():
+    builder = StockScreenerQueryBuilder()
+
+    query, params = builder.build_screener_query(
+        sector="All",
+        market_cap="+Large",
+        search="",
+        order="target_price_upside",
+        ascend=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert (
+        "ORDER BY COALESCE(\"Target Price Upside\", "
+        "((\"Target Price\" - \"Price\") / NULLIF(\"Price\", 0))) IS NULL, "
+        "COALESCE(\"Target Price Upside\", "
+        "((\"Target Price\" - \"Price\") / NULLIF(\"Price\", 0))) "
+        "DESC, \"Ticker\" ASC"
+    ) in query
+    assert params == [10_000_000_000, 10, 0]
 
 
 def test_search_condition_sql_uses_lowercase_like_with_escape():

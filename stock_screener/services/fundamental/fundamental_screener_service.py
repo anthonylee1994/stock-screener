@@ -9,6 +9,7 @@ from stock_screener.services.fundamental.fundamental_screener_client import Fund
 from stock_screener.utils.screener_rules import (
     MARKET_CAP_COLUMN,
     POTENTIAL_STOCK_COLUMN,
+    TARGET_PRICE_UPSIDE_COLUMN,
     VOLUME_COLUMN,
 )
 
@@ -47,6 +48,7 @@ DEFAULT_COLUMNS = [
     "200-Day Simple Moving Average",
     "52W High",
     "Target Price",
+    TARGET_PRICE_UPSIDE_COLUMN,
     POTENTIAL_STOCK_COLUMN,
     "Price",
     "Change",

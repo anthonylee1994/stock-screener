@@ -38,6 +38,7 @@ def test_fundamental_data_normalizer_rounds_non_score_metrics():
                 "SMA200": "4.5%",
                 "52W High": "-8%",
                 "Target Price": "250.50",
+                "Price": "200.25",
             }
         ]
     )
@@ -63,6 +64,7 @@ def test_fundamental_data_normalizer_rounds_non_score_metrics():
     assert normalized.loc[0, "200-Day Simple Moving Average"] == 0.045
     assert normalized.loc[0, "52W High"] == -0.08
     assert normalized.loc[0, "Target Price"] == 250.5
+    assert normalized.loc[0, "Target Price Upside"] == 0.2509
 
 
 def test_fundamental_data_normalizer_returns_empty_data_unchanged():

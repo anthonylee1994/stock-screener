@@ -5,6 +5,7 @@ TECHNICAL_SCORE_COLUMN = "Technical Score"
 CHANGE_PERCENT_COLUMN = "Change"
 VOLUME_COLUMN = "Volume"
 POTENTIAL_STOCK_COLUMN = "Potential Stock"
+TARGET_PRICE_UPSIDE_COLUMN = "Target Price Upside"
 MIN_VOLUME = 1_000_000
 
 MARKET_CAP_RANGES = {
@@ -32,6 +33,7 @@ SORT_COLUMN_BY_VALUE = {
     "total_score": TOTAL_SCORE_COLUMN,
     "change_percent": CHANGE_PERCENT_COLUMN,
     "volume": VOLUME_COLUMN,
+    "target_price_upside": TARGET_PRICE_UPSIDE_COLUMN,
 }
 SEARCH_COLUMNS = ("Ticker", "Company")
 

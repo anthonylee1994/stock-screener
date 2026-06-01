@@ -5,6 +5,7 @@ from stock_screener.utils.screener_rules import (
     FUNDAMENTAL_SCORE_COLUMN,
     MARKET_CAP_COLUMN,
     POTENTIAL_STOCK_COLUMN,
+    TARGET_PRICE_UPSIDE_COLUMN,
     TECHNICAL_SCORE_COLUMN,
     TOTAL_SCORE_COLUMN,
     VOLUME_COLUMN,
@@ -31,6 +32,7 @@ FUNDAMENTAL_FIELDS = {
     "sma200": "200-Day Simple Moving Average",
     "high_52w": "52W High",
     "target_price": "Target Price",
+    "target_price_upside": TARGET_PRICE_UPSIDE_COLUMN,
     "potential_stock": POTENTIAL_STOCK_COLUMN,
     "market_cap_score": "Market Cap Score",
     "forward_pe_score": "Forward P/E Score",
@@ -78,6 +80,7 @@ def format_record(row: pd.Series) -> dict:
         "sector": clean_value(row.get("Sector")),
         "market_cap": clean_value(row.get(MARKET_CAP_COLUMN)),
         "price": clean_value(first_valid_value(row.get("Price"), row.get("Quote Price"))),
+        "target_price_upside": clean_value(target_price_upside(row)),
         "change": clean_value(calculate_change(row)),
         "change_percent": clean_value(
             first_valid_value(
@@ -130,5 +133,18 @@ def calculate_change(row: pd.Series):
     quote_change = row.get("Quote Change")
     if not pd.isna(quote_change):
         return quote_change
+
+    return None
+
+
+def target_price_upside(row: pd.Series):
+    value = row.get(TARGET_PRICE_UPSIDE_COLUMN)
+    if not pd.isna(value):
+        return value
+
+    target_price = row.get("Target Price")
+    price = row.get("Price")
+    if not pd.isna(target_price) and not pd.isna(price) and price != 0:
+        return (target_price - price) / price
 
     return None

@@ -97,7 +97,7 @@ merges a JSON body if one is provided, but the route is exposed as `GET`.
 | `market_cap`      | string  | `+large`      | Market-cap filter. Supported API values: `+mid`, `+large`, `mid`, `large`, `mega`.                                                 |
 | `search`          | string  | empty         | Case-insensitive substring search against ticker and company/name.                                                                 |
 | `potential_stock` | boolean | `false`       | When true, only returns rows flagged as potential stocks. Accepted true values include `1`, `true`, `yes`, `y`, and `on`.          |
-| `order`           | string  | `total_score` | Sort field. Supported API values: `market_cap`, `fundamental_score`, `technical_score`, `total_score`, `change_percent`, `volume`. |
+| `order`           | string  | `total_score` | Sort field. Supported API values: `market_cap`, `fundamental_score`, `technical_score`, `total_score`, `change_percent`, `volume`, `target_price_upside`. |
 | `ascend`          | boolean | `false`       | Sort ascending when true. Accepted true values include `1`, `true`, `yes`, `y`, and `on`. Anything else is treated false.          |
 | `limit`           | integer | `100`         | Number of rows to return for this page. Values below `1` become `1`; values above `100` become `100`.                              |
 | `offset`          | integer | `0`           | Number of matching rows to skip before returning this page. Values below `0` become `0`.                                           |
@@ -315,6 +315,8 @@ Rows without a total score are filtered out before response sorting.
 - Fundamentals and initial screen: Finviz via `finvizfinance`
 - Potential-stock fields: Finviz Custom Screener fields `EPS Q/Q`, `Sales Q/Q`,
   `Oper M`, `Short Float`, `52W High`, and `Target Price`
+- Derived fundamental fields: `target_price_upside` is calculated from
+  `(Target Price - Price) / Price` and can be used for sorting.
 - Top-level quote fields (`price`, `change`, `change_percent`, `volume`):
   Finviz via `finvizfinance`
 - Technical price history: Yahoo Finance via `yfinance`

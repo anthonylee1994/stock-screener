@@ -22,6 +22,8 @@ def test_format_response_maps_records_and_pagination_metadata():
                 "Potential Stock": 1,
                 "Gross Margin": 0.65,
                 "200-Day Simple Moving Average": 0.02,
+                "Target Price": 150.0,
+                "Target Price Upside": 0.3636,
                 "Fundamental Score": 90.0,
                 "Technical Score": 87.0,
             }
@@ -43,8 +45,13 @@ def test_format_response_maps_records_and_pagination_metadata():
     assert response["next_offset"] == 2
     assert response["data"][0]["ticker"] == "NVDA"
     assert response["data"][0]["change"] == pytest.approx(10.0)
+    assert response["data"][0]["target_price_upside"] == 0.3636
     assert response["data"][0]["potential_stock"] is True
     assert response["data"][0]["fundamental"]["potential_stock"] == 1
+    assert (
+        response["data"][0]["fundamental"]["target_price_upside"]
+        == 0.3636
+    )
     assert response["data"][0]["fundamental"]["gross_margin"] == 0.65
     assert response["data"][0]["fundamental"]["sma200"] == 0.02
     assert response["data"][0]["fundamental"]["fundamental_score"] == 90.0
@@ -81,6 +88,20 @@ def test_format_record_uses_quote_change_when_price_change_percent_is_missing():
     record = format_record(row)
 
     assert record["change"] == 4.0
+
+
+def test_format_record_calculates_target_price_upside_fallback():
+    row = pd.Series(
+        {
+            "Ticker": "MSFT",
+            "Price": 110.0,
+            "Target Price": 125.5,
+        }
+    )
+
+    record = format_record(row)
+
+    assert record["target_price_upside"] == pytest.approx(0.1409, rel=0.001)
 
 
 def test_format_record_returns_none_for_missing_values():

@@ -1,6 +1,7 @@
 from stock_screener.services.api.screener_request import ScreenerRequest
 from stock_screener.utils.screener_rules import (
     MARKET_CAP_COLUMN,
+    TARGET_PRICE_UPSIDE_COLUMN,
     TOTAL_SCORE_COLUMN,
 )
 
@@ -41,6 +42,12 @@ def test_screener_request_maps_market_cap_sort_alias():
     request = ScreenerRequest({"order": "market_cap"})
 
     assert request.order == MARKET_CAP_COLUMN
+
+
+def test_screener_request_maps_target_price_upside_sort_alias():
+    request = ScreenerRequest({"order": "target_price_upside"})
+
+    assert request.order == TARGET_PRICE_UPSIDE_COLUMN
 
 
 def test_screener_request_parse_int_applies_minimum_without_maximum():
