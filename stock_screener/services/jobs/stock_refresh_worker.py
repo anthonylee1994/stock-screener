@@ -42,10 +42,7 @@ class StockRefreshWorker:
                 )
                 return
 
-            data = self.integrated_builder.build(
-                limit=DEFAULT_LIMIT,
-                force_refresh=force_refresh,
-            )
+            data = self.integrated_builder.build(limit=DEFAULT_LIMIT)
             if not data.empty and "Ticker" in data.columns:
                 data = self.database.replace_scored_stocks(data)
             logger.info(

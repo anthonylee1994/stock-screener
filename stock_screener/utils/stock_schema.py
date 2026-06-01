@@ -6,6 +6,7 @@ from stock_screener.utils.screener_rules import (
     MARKET_CAP_COLUMN,
     MIN_VOLUME,
     POTENTIAL_STOCK_COLUMN,
+    SORT_COLUMN_BY_VALUE,
     TARGET_PRICE_UPSIDE_COLUMN,
     TECHNICAL_SCORE_COLUMN,
     TOTAL_SCORE_COLUMN,
@@ -71,26 +72,13 @@ STOCKS_COLUMNS = {
     "RSI14": "REAL",
     TOTAL_SCORE_COLUMN: "REAL",
 }
+
+STOCKS_SCREENER_SORT_INDEX_COLUMNS = SORT_COLUMN_BY_VALUE
 STOCKS_INDEX_COLUMNS = {
     "sector": "Sector",
-    "market_cap": MARKET_CAP_COLUMN,
     "ticker": "Ticker",
-    "fundamental_score": FUNDAMENTAL_SCORE_COLUMN,
-    "technical_score": TECHNICAL_SCORE_COLUMN,
-    "total_score": TOTAL_SCORE_COLUMN,
-    "change_percent": CHANGE_PERCENT_COLUMN,
-    "volume": VOLUME_COLUMN,
-    "target_price_upside": TARGET_PRICE_UPSIDE_COLUMN,
+    **SORT_COLUMN_BY_VALUE,
     "potential_stock": POTENTIAL_STOCK_COLUMN,
-}
-STOCKS_SCREENER_SORT_INDEX_COLUMNS = {
-    "market_cap": MARKET_CAP_COLUMN,
-    "fundamental_score": FUNDAMENTAL_SCORE_COLUMN,
-    "technical_score": TECHNICAL_SCORE_COLUMN,
-    "total_score": TOTAL_SCORE_COLUMN,
-    "change_percent": CHANGE_PERCENT_COLUMN,
-    "volume": VOLUME_COLUMN,
-    "target_price_upside": TARGET_PRICE_UPSIDE_COLUMN,
 }
 
 
@@ -105,7 +93,7 @@ def stocks_select_columns_sql() -> str:
 class StockTableSchema:
     def create_table_sql(self, table_name: str) -> str:
         columns_sql = ", ".join(
-            f'{quote_identifier(column)} {column_type}'
+            f"{quote_identifier(column)} {column_type}"
             for column, column_type in STOCKS_COLUMNS.items()
         )
         return f'CREATE TABLE IF NOT EXISTS "{table_name}" ({columns_sql})'
@@ -126,8 +114,8 @@ class StockTableSchema:
             connection.execute(
                 f'CREATE INDEX IF NOT EXISTS "{table_name}_screener_{index_key}_desc_idx" '
                 f'ON "{table_name}" ({quote_identifier(column)} DESC) '
-                f'WHERE {quote_identifier(TOTAL_SCORE_COLUMN)} IS NOT NULL '
-                f'AND {quote_identifier(VOLUME_COLUMN)} >= {MIN_VOLUME}'
+                f"WHERE {quote_identifier(TOTAL_SCORE_COLUMN)} IS NOT NULL "
+                f"AND {quote_identifier(VOLUME_COLUMN)} >= {MIN_VOLUME}"
             )
 
     def add_missing_columns(self, connection, table_name: str) -> None:
@@ -136,7 +124,7 @@ class StockTableSchema:
             if column not in existing_columns:
                 connection.execute(
                     f'ALTER TABLE "{table_name}" ADD COLUMN '
-                    f'{quote_identifier(column)} {column_type}'
+                    f"{quote_identifier(column)} {column_type}"
                 )
 
     def fetch_table_columns(self, connection, table_name: str) -> set[str]:

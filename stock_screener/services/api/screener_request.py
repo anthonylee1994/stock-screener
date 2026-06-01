@@ -1,6 +1,4 @@
 from stock_screener.utils.screener_rules import (
-    MARKET_CAP_BY_API_VALUE as SCREENER_MARKET_CAP_BY_API_VALUE,
-    SORT_COLUMN_BY_VALUE as SCREENER_SORT_COLUMN_BY_VALUE,
     normalize_market_cap_value,
     normalize_sort_value,
 )
@@ -14,8 +12,6 @@ DEFAULT_ASCEND = False
 DEFAULT_LIMIT = 100
 MAX_LIMIT = 100
 DEFAULT_OFFSET = 0
-MARKET_CAP_BY_API_VALUE = SCREENER_MARKET_CAP_BY_API_VALUE
-ORDER_BY_API_VALUE = SCREENER_SORT_COLUMN_BY_VALUE
 
 
 class ScreenerRequest:

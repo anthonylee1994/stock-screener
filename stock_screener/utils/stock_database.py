@@ -133,7 +133,6 @@ class StockDatabase:
         query: str,
         params: list[Any] | None = None,
     ) -> pd.DataFrame:
-        logger.info("stocks table SQL query=%s params=%s", query, params or [])
         cursor = connection.execute(query, params or [])
         rows = cursor.fetchall()
         columns = [column[0] for column in cursor.description]

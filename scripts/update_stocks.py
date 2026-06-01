@@ -40,10 +40,7 @@ def main() -> int:
     )
     stock_database.initialize()
 
-    data = IntegratedScreenerBuilder().build(
-        limit=args.limit,
-        force_refresh=True,
-    )
+    data = IntegratedScreenerBuilder().build(limit=args.limit)
     if data.empty or "Ticker" not in data.columns:
         logger.error(
             "手動更新失敗：獲取返嚟嘅資料冇 ticker rows=%s elapsed=%.2fs",

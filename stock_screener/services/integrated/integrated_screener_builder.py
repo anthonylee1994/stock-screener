@@ -29,17 +29,9 @@ class IntegratedScreenerBuilder:
         self.fundamental_service = fundamental_service
         self.technical_service = technical_service
 
-    def build(
-        self,
-        limit: int,
-        force_refresh: bool = False,
-    ) -> pd.DataFrame:
+    def build(self, limit: int) -> pd.DataFrame:
         started_at = time.monotonic()
-        logger.info(
-            "開始建立完整篩選器資料 limit=%s force_refresh=%s",
-            limit,
-            force_refresh,
-        )
+        logger.info("開始建立完整篩選器資料 limit=%s", limit)
 
         fundamental_data = self.get_fundamental_data(limit)
         if fundamental_data.empty or "Ticker" not in fundamental_data.columns:
