@@ -45,16 +45,16 @@
 
 除咗評分用嘅核心基本面欄位，系統亦會由 Finviz Custom Screener 攞以下欄位，主要用嚟顯示同判斷 `Potential Stock`：
 
-| 系統欄位                     | Finviz 欄位    | 解讀                               |
-| ---------------------------- | -------------- | ---------------------------------- |
-| `EPS Quarter Over Quarter`   | `EPS Q/Q`      | 最近季度 EPS 同比增長              |
-| `Sales Quarter Over Quarter` | `Sales Q/Q`    | 最近季度收入同比增長               |
-| `Gross Margin`               | `Gross M`      | 毛利率                             |
-| `Operating Margin`           | `Oper M`       | 營業利潤率，反映營運槓桿同成本控制 |
-| `Short Interest`             | `Short Float`  | short float，顯示用資料            |
-| `52W High`                   | `52W High`     | 股價距離 52-week high 嘅相對距離   |
-| `Target Price`               | `Target Price` | 分析師目標價                       |
-| `Target Price Upside` | 計算欄位 | `(Target Price - Price) / Price`，可用 `target_price_upside` 排序 |
+| 系統欄位                     | Finviz 欄位    | 解讀                                                              |
+| ---------------------------- | -------------- | ----------------------------------------------------------------- |
+| `EPS Quarter Over Quarter`   | `EPS Q/Q`      | 最近季度 EPS 同比增長                                             |
+| `Sales Quarter Over Quarter` | `Sales Q/Q`    | 最近季度收入同比增長                                              |
+| `Gross Margin`               | `Gross M`      | 毛利率                                                            |
+| `Operating Margin`           | `Oper M`       | 營業利潤率，反映營運槓桿同成本控制                                |
+| `Short Interest`             | `Short Float`  | short float，顯示用資料                                           |
+| `52W High`                   | `52W High`     | 股價距離 52-week high 嘅相對距離                                  |
+| `Target Price`               | `Target Price` | 分析師目標價                                                      |
+| `Target Price Upside`        | 計算欄位       | `(Target Price - Price) / Price`，可用 `target_price_upside` 排序 |
 
 百分比欄位會統一用 ratio 儲存，例如 `12.5%` 會儲成 `0.125`。如果 Finvizfinance 已經回傳 `0.125` 呢類 ratio，系統會直接保留，唔會再除 100。
 
@@ -131,14 +131,14 @@ AND
 (Price above SMA200)
 ```
 
-| 條件     | 門檻                                         |
-| -------- | -------------------------------------------- |
-| 市值     | `Market Cap >= 2B`                           |
-| 成長     | `EPS Past 5Y > 15%` 或 `Sales Past 5Y > 15%` |
-| 盈利能力 | `Profit Margin > 0`                          |
-| 估值     | `PEG < 1`                                    |
-| 營運質素 | `ROE > 15%`                                  |
-| 流動性   | `Volume >= 500K`                             |
+| 條件     | 門檻                                                           |
+| -------- | -------------------------------------------------------------- |
+| 市值     | `Market Cap >= 2B`                                             |
+| 成長     | `EPS Past 5Y > 15%` 或 `Sales Past 5Y > 15%`                   |
+| 盈利能力 | `Profit Margin > 0`                                            |
+| 估值     | `PEG < 1`                                                      |
+| 營運質素 | `ROE > 15%`                                                    |
+| 流動性   | `Volume >= 500K`                                               |
 | 趨勢     | `200-Day Simple Moving Average > 0`，等同 `Price above SMA200` |
 
 如果相關資料缺失，`Potential Stock` 會當 `False`，唔會用 `NULL`。系統內部會將百分比欄位儲存成 ratio，例如 `15%` 係 `0.15`。API 可以用 `potential_stock=true` 篩走非潛力股。
