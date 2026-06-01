@@ -6,7 +6,6 @@ from stock_screener.utils.screener_rules import (
     MIN_VOLUME,
     POTENTIAL_STOCK_COLUMN,
     SEARCH_COLUMNS,
-    TARGET_PRICE_UPSIDE_COLUMN,
     TOTAL_SCORE_COLUMN,
     VOLUME_COLUMN,
     normalize_sort_value,
@@ -196,13 +195,12 @@ class StockScreenerQueryBuilder:
         offset: int,
     ) -> tuple[str, list[Any]]:
         order_column = self.normalize_sort_column(order)
-        order_expression = self.sort_expression(order_column)
         direction = "ASC" if ascend else "DESC"
         query = (
             f'SELECT {stocks_select_columns_sql()} FROM "{STOCKS_TABLE}" '
             f"WHERE {' AND '.join(where_sql)} "
-            f"ORDER BY {order_expression} IS NULL, "
-            f"{order_expression} {direction}, "
+            f'ORDER BY {quote_identifier(order_column)} IS NULL, '
+            f'{quote_identifier(order_column)} {direction}, '
             f'"Ticker" ASC '
             f"LIMIT {self.placeholder} OFFSET {self.placeholder}"
         )
@@ -234,15 +232,6 @@ class StockScreenerQueryBuilder:
         if column not in STOCKS_COLUMNS:
             return MARKET_CAP_COLUMN
         return column
-
-    def sort_expression(self, column: str) -> str:
-        if column == TARGET_PRICE_UPSIDE_COLUMN:
-            return (
-                f"COALESCE({quote_identifier(TARGET_PRICE_UPSIDE_COLUMN)}, "
-                f"(({quote_identifier('Target Price')} - {quote_identifier('Price')}) "
-                f"/ NULLIF({quote_identifier('Price')}, 0)))"
-            )
-        return quote_identifier(column)
 
     def like_contains_value(self, value: str) -> str:
         return f"%{self.escape_like_value(str(value).lower())}%"

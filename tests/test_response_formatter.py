@@ -90,7 +90,22 @@ def test_format_record_uses_quote_change_when_price_change_percent_is_missing():
     assert record["change"] == 4.0
 
 
-def test_format_record_calculates_target_price_upside_fallback():
+def test_format_record_reads_target_price_upside_column_only():
+    row = pd.Series(
+        {
+            "Ticker": "MSFT",
+            "Price": 110.0,
+            "Target Price": 125.5,
+            "Target Price Upside": 0.1409,
+        }
+    )
+
+    record = format_record(row)
+
+    assert record["target_price_upside"] == 0.1409
+
+
+def test_format_record_does_not_calculate_missing_target_price_upside():
     row = pd.Series(
         {
             "Ticker": "MSFT",
@@ -101,7 +116,7 @@ def test_format_record_calculates_target_price_upside_fallback():
 
     record = format_record(row)
 
-    assert record["target_price_upside"] == pytest.approx(0.1409, rel=0.001)
+    assert record["target_price_upside"] is None
 
 
 def test_format_record_returns_none_for_missing_values():

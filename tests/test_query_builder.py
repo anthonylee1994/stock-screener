@@ -103,7 +103,7 @@ def test_normalize_sort_column_falls_back_to_market_cap():
     assert builder.normalize_sort_column("Market Cap.") == "Market Cap"
 
 
-def test_build_screener_query_sorts_by_target_price_upside_expression():
+def test_build_screener_query_sorts_by_target_price_upside_column():
     builder = StockScreenerQueryBuilder()
 
     query, params = builder.build_screener_query(
@@ -117,11 +117,8 @@ def test_build_screener_query_sorts_by_target_price_upside_expression():
     )
 
     assert (
-        "ORDER BY COALESCE(\"Target Price Upside\", "
-        "((\"Target Price\" - \"Price\") / NULLIF(\"Price\", 0))) IS NULL, "
-        "COALESCE(\"Target Price Upside\", "
-        "((\"Target Price\" - \"Price\") / NULLIF(\"Price\", 0))) "
-        "DESC, \"Ticker\" ASC"
+        'ORDER BY "Target Price Upside" IS NULL, '
+        '"Target Price Upside" DESC, "Ticker" ASC'
     ) in query
     assert params == [10_000_000_000, 10, 0]
 

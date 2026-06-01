@@ -80,7 +80,7 @@ def format_record(row: pd.Series) -> dict:
         "sector": clean_value(row.get("Sector")),
         "market_cap": clean_value(row.get(MARKET_CAP_COLUMN)),
         "price": clean_value(first_valid_value(row.get("Price"), row.get("Quote Price"))),
-        "target_price_upside": clean_value(target_price_upside(row)),
+        "target_price_upside": clean_value(row.get(TARGET_PRICE_UPSIDE_COLUMN)),
         "change": clean_value(calculate_change(row)),
         "change_percent": clean_value(
             first_valid_value(
@@ -133,18 +133,5 @@ def calculate_change(row: pd.Series):
     quote_change = row.get("Quote Change")
     if not pd.isna(quote_change):
         return quote_change
-
-    return None
-
-
-def target_price_upside(row: pd.Series):
-    value = row.get(TARGET_PRICE_UPSIDE_COLUMN)
-    if not pd.isna(value):
-        return value
-
-    target_price = row.get("Target Price")
-    price = row.get("Price")
-    if not pd.isna(target_price) and not pd.isna(price) and price != 0:
-        return (target_price - price) / price
 
     return None
