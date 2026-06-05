@@ -17,8 +17,7 @@ total score.
   indicators.
 - Stores the full screener result in SQLite so API
   requests do not trigger a full refresh.
-- Refreshes the stocks table in a background worker at 08:15 Asia/Hong_Kong
-  time.
+- Supports stock table refreshes through the `scripts.update_stocks` command.
 - Stores Finviz quote fields with the screener result.
 - Applies sector, market-cap, search, sorting, and response limiting on the
   database side.
@@ -39,7 +38,6 @@ stock_screener/
     common/              Shared scoring and normalization helpers
     fundamental/         Finviz fundamentals and fundamental scoring
     integrated/          Combined fundamental/technical screener builder
-    jobs/                Background refresh worker
     technical/           Yahoo Finance prices and technical scoring
   utils/                 SQLite schema, queries, and persistence helpers
 scripts/
@@ -63,9 +61,10 @@ http://localhost:3000
 
 On startup, the app initializes the configured SQLite database. If the
 `stocks` table already has rows, the server uses those rows without refreshing
-quote data. If the table is empty, it builds the full integrated screener list
-before serving useful results. At 08:15 Asia/Hong_Kong, the background worker
-force-refreshes the stocks table and stores everything back into the database.
+quote data. If the table is empty, run `scripts.update_stocks` to populate it
+before expecting useful screener results. Scheduled refreshes should be run
+outside the web process, for example by server crontab calling
+`scripts.update_stocks`.
 
 ## Configuration
 
@@ -306,9 +305,9 @@ Rows without a total score are filtered out before response sorting.
 - API filtering, sorting, and limiting are handled in SQL.
 - API requests do not use in-memory screener or quote caches.
 - API requests do not trigger a Finviz, technical, or quote refresh.
-- Startup only rebuilds the table when `stocks` is empty.
-- The daily 08:15 Asia/Hong_Kong worker rebuilds the table and writes fresh
-  Finviz quote fields into SQLite.
+- Startup initializes the SQLite schema but does not rebuild stock data.
+- Scheduled refreshes should run `scripts.update_stocks`, which rebuilds the
+  table and writes fresh Finviz quote fields into SQLite.
 
 ## Data Sources
 
@@ -333,7 +332,7 @@ dokku storage:mount stock-screener /var/lib/dokku/data/storage/stock-screener:/a
 git push dokku main
 ```
 
-Optional manual refresh:
+Server crontab refresh command:
 
 ```bash
 dokku run stock-screener uv run python -m scripts.update_stocks

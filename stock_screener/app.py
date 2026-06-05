@@ -5,7 +5,6 @@ from flask import Flask
 from flask_cors import CORS
 
 from stock_screener.controllers.screener_controller import screener_controller
-from stock_screener.services.jobs.stock_refresh_worker import stock_refresh_worker
 from stock_screener.utils.stock_database import stock_database
 
 
@@ -24,7 +23,6 @@ def create_app() -> Flask:
 
 app = create_app()
 stock_database.initialize()
-stock_refresh_worker.start()
 
 
 if __name__ == "__main__":
