@@ -15,3 +15,6 @@ wheels/
 data/
 .idea
 .claude
+.mavis
+.opencode
+.pytest_cache
