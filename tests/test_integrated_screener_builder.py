@@ -56,7 +56,7 @@ def test_integrated_screener_builder_merges_technical_data_and_adds_weighted_sco
     assert fundamental_service.calls == [2]
     assert technical_service.calls == [["AAPL", "MSFT"]]
     assert result["Ticker"].tolist() == ["AAPL", "MSFT"]
-    assert result[TOTAL_SCORE_COLUMN].tolist() == pytest.approx([0.0, 100.0])
+    assert result[TOTAL_SCORE_COLUMN].tolist() == pytest.approx([100.0, 0.0])
 
 
 def test_integrated_screener_builder_returns_fundamental_copy_when_no_ticker_column():

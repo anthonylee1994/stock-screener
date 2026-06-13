@@ -13,32 +13,46 @@ from stock_screener.utils.screener_rules import (
 SCORE_COLUMN = FUNDAMENTAL_SCORE_COLUMN
 SCORE_METRICS = [
     (MARKET_CAP_COLUMN, True, 0, "Market Cap Score"),
-    ("EPS Past 5Y", True, 0.18, "EPS Past 5Y Score"),
+    ("EPS Past 5Y", True, 0.16, "EPS Past 5Y Score"),
     ("Sales Past 5Y", True, 0.08, "Sales Past 5Y Score"),
-    ("ROE", True, 0.13, "ROE Score"),
-    ("ROIC", True, 0.2, "ROIC Score"),
-    ("Profit Margin", True, 0.06, "Profit Margin Score"),
-    ("Forward P/E", False, 0.05, "Forward P/E Score"),
-    ("PEG", False, 0.17, "PEG Score"),
+    ("ROE", True, 0.12, "ROE Score"),
+    ("ROIC", True, 0.24, "ROIC Score"),
+    ("Profit Margin", True, 0.08, "Profit Margin Score"),
+    ("Forward P/E", False, 0.06, "Forward P/E Score"),
+    ("PEG", False, 0.14, "PEG Score"),
     ("P/S", False, 0.03, "P/S Score"),
-    ("P/FCF", False, 0.07, "P/FCF Score"),
+    ("P/FCF", False, 0.06, "P/FCF Score"),
     ("Debt/Equity", False, 0.03, "Debt/Equity Score"),
 ]
 SCORE_WEIGHTS = {metric: weight for metric, _, weight, _ in SCORE_METRICS}
 MIN_SECTOR_SCORE_SAMPLE_SIZE = 5
-CORE_SCORE_METRICS = ("ROIC", "EPS Past 5Y", "PEG")
-MIN_CORE_SCORE_METRIC_COUNT = 2
+CORE_SCORE_METRICS = ("ROIC", "EPS Past 5Y", "PEG", "P/FCF")
+MIN_CORE_SCORE_METRIC_COUNT = 3
 INSUFFICIENT_CORE_SCORE_CAP = 60.0
-CORE_SCORE_COLUMNS = ("ROIC Score", "EPS Past 5Y Score", "PEG Score")
+CORE_SCORE_COLUMNS = ("ROIC Score", "EPS Past 5Y Score", "PEG Score", "P/FCF Score")
 MIN_CORE_AVERAGE_SCORE = 70.0
 WEAK_CORE_SCORE_CAP = 75.0
+QUALITY_SCORE_COLUMNS = ("ROIC Score", "ROE Score", "Profit Margin Score")
+MIN_QUALITY_AVERAGE_SCORE = 55.0
+WEAK_QUALITY_SCORE_CAP = 70.0
+VALUATION_SCORE_COLUMNS = (
+    "Forward P/E Score",
+    "PEG Score",
+    "P/S Score",
+    "P/FCF Score",
+)
+MIN_VALUATION_AVERAGE_SCORE = 35.0
+EXPENSIVE_STOCK_SCORE_CAP = 82.0
 MIN_POTENTIAL_EPS_PAST_5Y = 0.15
 MIN_POTENTIAL_SALES_PAST_5Y = 0.15
 MIN_POTENTIAL_ROE = 0.15
+MIN_POTENTIAL_ROIC = 0.10
 MIN_POTENTIAL_MARKET_CAP = 2_000_000_000
 MIN_POTENTIAL_PROFIT_MARGIN = 0.0
 MIN_POTENTIAL_VOLUME = 500_000
 MAX_POTENTIAL_PEG = 1.0
+MAX_POTENTIAL_FORWARD_PE = 35.0
+MAX_POTENTIAL_DEBT_EQUITY = 2.0
 
 
 class FundamentalScoreCalculator:
@@ -70,7 +84,7 @@ class FundamentalScoreCalculator:
         score_frame = pd.concat(score_parts, axis=1)
         scored_data[SCORE_COLUMN] = score_frame.sum(axis=1).round(2)
         scored_data[SCORE_COLUMN] = curve_score(scored_data[SCORE_COLUMN]).round(2)
-        scored_data[SCORE_COLUMN] = self.apply_core_metric_guardrail(scored_data)
+        scored_data[SCORE_COLUMN] = self.apply_score_guardrails(scored_data)
         scored_data[POTENTIAL_STOCK_COLUMN] = self.calculate_potential_stock(
             scored_data
         )
@@ -121,6 +135,11 @@ class FundamentalScoreCalculator:
             return pd.NA
         return sector
 
+    def apply_score_guardrails(self, data: pd.DataFrame) -> pd.Series:
+        guarded_score = self.apply_core_metric_guardrail(data)
+        guarded_score = self.apply_quality_guardrail(data, guarded_score)
+        return self.apply_valuation_guardrail(data, guarded_score)
+
     def apply_core_metric_guardrail(self, data: pd.DataFrame) -> pd.Series:
         core_metric_data = pd.DataFrame(index=data.index)
         for column in CORE_SCORE_METRICS:
@@ -140,14 +159,49 @@ class FundamentalScoreCalculator:
             guarded_score.clip(upper=WEAK_CORE_SCORE_CAP),
         )
 
+    def apply_quality_guardrail(
+        self,
+        data: pd.DataFrame,
+        score: pd.Series,
+    ) -> pd.Series:
+        quality_average_score = self.calculate_average_score(
+            data,
+            QUALITY_SCORE_COLUMNS,
+        )
+        return score.where(
+            quality_average_score >= MIN_QUALITY_AVERAGE_SCORE,
+            score.clip(upper=WEAK_QUALITY_SCORE_CAP),
+        )
+
+    def apply_valuation_guardrail(
+        self,
+        data: pd.DataFrame,
+        score: pd.Series,
+    ) -> pd.Series:
+        valuation_average_score = self.calculate_average_score(
+            data,
+            VALUATION_SCORE_COLUMNS,
+        )
+        return score.where(
+            valuation_average_score >= MIN_VALUATION_AVERAGE_SCORE,
+            score.clip(upper=EXPENSIVE_STOCK_SCORE_CAP),
+        )
+
     def calculate_core_average_score(self, data: pd.DataFrame) -> pd.Series:
-        core_scores = pd.DataFrame(index=data.index)
-        for column in CORE_SCORE_COLUMNS:
+        return self.calculate_average_score(data, CORE_SCORE_COLUMNS)
+
+    def calculate_average_score(
+        self,
+        data: pd.DataFrame,
+        columns: tuple[str, ...],
+    ) -> pd.Series:
+        scores = pd.DataFrame(index=data.index)
+        for column in columns:
             if column in data.columns:
-                core_scores[column] = to_numeric_series(data[column])
+                scores[column] = to_numeric_series(data[column])
             else:
-                core_scores[column] = pd.NA
-        return core_scores.mean(axis=1).fillna(0.0)
+                scores[column] = pd.NA
+        return scores.mean(axis=1).fillna(0.0)
 
     def calculate_potential_stock(self, data: pd.DataFrame) -> pd.Series:
         market_cap = self.metric(data, MARKET_CAP_COLUMN)
@@ -155,7 +209,10 @@ class FundamentalScoreCalculator:
         sales_past_5y = self.metric(data, "Sales Past 5Y")
         profit_margin = self.metric(data, "Profit Margin")
         roe = self.metric(data, "ROE")
+        roic = self.metric(data, "ROIC")
         peg = self.metric(data, "PEG")
+        forward_pe = self.metric(data, "Forward P/E")
+        debt_equity = self.metric(data, "Debt/Equity")
         volume = self.metric(data, "Volume")
         sma200 = self.metric(data, "200-Day Simple Moving Average")
 
@@ -165,7 +222,10 @@ class FundamentalScoreCalculator:
         )
         positive_profit_margin = profit_margin > MIN_POTENTIAL_PROFIT_MARGIN
         high_roe = roe > MIN_POTENTIAL_ROE
+        efficient_capital_use = roic > MIN_POTENTIAL_ROIC
         cheap_growth = peg < MAX_POTENTIAL_PEG
+        reasonable_forward_pe = forward_pe < MAX_POTENTIAL_FORWARD_PE
+        manageable_debt = debt_equity < MAX_POTENTIAL_DEBT_EQUITY
         liquid_enough = volume >= MIN_POTENTIAL_VOLUME
         above_sma200 = sma200 > 0
 
@@ -174,7 +234,10 @@ class FundamentalScoreCalculator:
             & strong_growth
             & positive_profit_margin
             & cheap_growth
+            & reasonable_forward_pe
             & high_roe
+            & efficient_capital_use
+            & manageable_debt
             & liquid_enough
             & above_sma200
         ).fillna(False).astype(bool)

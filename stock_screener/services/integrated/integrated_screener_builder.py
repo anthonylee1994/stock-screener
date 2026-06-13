@@ -15,8 +15,8 @@ from stock_screener.utils.screener_rules import TOTAL_SCORE_COLUMN
 
 
 SCORE_COLUMN = TOTAL_SCORE_COLUMN
-FUNDAMENTAL_SCORE_WEIGHT = 0.6
-TECHNICAL_SCORE_WEIGHT = 0.4
+FUNDAMENTAL_SCORE_WEIGHT = 0.75
+TECHNICAL_SCORE_WEIGHT = 0.25
 logger = logging.getLogger(__name__)
 
 
