@@ -173,15 +173,15 @@ def test_fundamental_score_weights_are_balanced_and_sum_to_one():
     assert SCORE_WEIGHTS == {
         "Market Cap": 0,
         "EPS Past 5Y": 0.16,
-        "Sales Past 5Y": 0.08,
+        "Sales Past 5Y": 0.07,
         "ROE": 0.12,
-        "ROIC": 0.24,
-        "Profit Margin": 0.08,
+        "ROIC": 0.22,
+        "Profit Margin": 0.10,
         "Forward P/E": 0.06,
-        "PEG": 0.14,
+        "PEG": 0.13,
         "P/S": 0.03,
         "P/FCF": 0.06,
-        "Debt/Equity": 0.03,
+        "Debt/Equity": 0.05,
     }
 
 
@@ -237,15 +237,15 @@ def test_fundamental_score_calculator_marks_potential_stock_setup():
             ),
             stock_data(
                 "PEG_AT_THRESHOLD",
-                **{"PEG": 1.0},
+                **{"PEG": 1.2},
             ),
             stock_data(
                 "PEG_ABOVE_THRESHOLD",
-                **{"PEG": 1.01},
+                **{"PEG": 1.21},
             ),
             stock_data(
                 "FORWARD_PE_TOO_HIGH",
-                **{"Forward P/E": 35.0},
+                **{"Forward P/E": 40.0},
             ),
             stock_data(
                 "MISSING_FORWARD_PE",
@@ -257,15 +257,15 @@ def test_fundamental_score_calculator_marks_potential_stock_setup():
             ),
             stock_data(
                 "ROIC_AT_THRESHOLD",
-                **{"ROIC": 0.10},
+                **{"ROIC": 0.08},
             ),
             stock_data(
                 "ROIC_BELOW_THRESHOLD",
-                **{"ROIC": 0.0999},
+                **{"ROIC": 0.0799},
             ),
             stock_data(
                 "DEBT_AT_THRESHOLD",
-                **{"Debt/Equity": 2.0},
+                **{"Debt/Equity": 2.5},
             ),
             stock_data(
                 "MISSING_DEBT",
@@ -273,11 +273,11 @@ def test_fundamental_score_calculator_marks_potential_stock_setup():
             ),
             stock_data(
                 "SMALL_MARKET_CAP",
-                **{"Market Cap": 1_999_999_999},
+                **{"Market Cap": 999_999_999},
             ),
             stock_data(
                 "LOW_VOLUME",
-                **{"Volume": 499_999},
+                **{"Volume": 299_999},
             ),
             stock_data(
                 "EPS_BELOW_THRESHOLD",
@@ -289,11 +289,11 @@ def test_fundamental_score_calculator_marks_potential_stock_setup():
             ),
             stock_data(
                 "ROE_AT_THRESHOLD",
-                **{"ROE": 0.15},
+                **{"ROE": 0.12},
             ),
             stock_data(
                 "ROE_BELOW_THRESHOLD",
-                **{"ROE": 0.1499},
+                **{"ROE": 0.1199},
             ),
             stock_data(
                 "MISSING_SMA200",

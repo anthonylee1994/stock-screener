@@ -14,15 +14,15 @@ SCORE_COLUMN = FUNDAMENTAL_SCORE_COLUMN
 SCORE_METRICS = [
     (MARKET_CAP_COLUMN, True, 0, "Market Cap Score"),
     ("EPS Past 5Y", True, 0.16, "EPS Past 5Y Score"),
-    ("Sales Past 5Y", True, 0.08, "Sales Past 5Y Score"),
+    ("Sales Past 5Y", True, 0.07, "Sales Past 5Y Score"),
     ("ROE", True, 0.12, "ROE Score"),
-    ("ROIC", True, 0.24, "ROIC Score"),
-    ("Profit Margin", True, 0.08, "Profit Margin Score"),
+    ("ROIC", True, 0.22, "ROIC Score"),
+    ("Profit Margin", True, 0.10, "Profit Margin Score"),
     ("Forward P/E", False, 0.06, "Forward P/E Score"),
-    ("PEG", False, 0.14, "PEG Score"),
+    ("PEG", False, 0.13, "PEG Score"),
     ("P/S", False, 0.03, "P/S Score"),
     ("P/FCF", False, 0.06, "P/FCF Score"),
-    ("Debt/Equity", False, 0.03, "Debt/Equity Score"),
+    ("Debt/Equity", False, 0.05, "Debt/Equity Score"),
 ]
 SCORE_WEIGHTS = {metric: weight for metric, _, weight, _ in SCORE_METRICS}
 MIN_SECTOR_SCORE_SAMPLE_SIZE = 5
@@ -45,14 +45,14 @@ MIN_VALUATION_AVERAGE_SCORE = 35.0
 EXPENSIVE_STOCK_SCORE_CAP = 82.0
 MIN_POTENTIAL_EPS_PAST_5Y = 0.15
 MIN_POTENTIAL_SALES_PAST_5Y = 0.15
-MIN_POTENTIAL_ROE = 0.15
-MIN_POTENTIAL_ROIC = 0.10
-MIN_POTENTIAL_MARKET_CAP = 2_000_000_000
+MIN_POTENTIAL_ROE = 0.12
+MIN_POTENTIAL_ROIC = 0.08
+MIN_POTENTIAL_MARKET_CAP = 1_000_000_000
 MIN_POTENTIAL_PROFIT_MARGIN = 0.0
-MIN_POTENTIAL_VOLUME = 500_000
-MAX_POTENTIAL_PEG = 1.0
-MAX_POTENTIAL_FORWARD_PE = 35.0
-MAX_POTENTIAL_DEBT_EQUITY = 2.0
+MIN_POTENTIAL_VOLUME = 300_000
+MAX_POTENTIAL_PEG = 1.2
+MAX_POTENTIAL_FORWARD_PE = 40.0
+MAX_POTENTIAL_DEBT_EQUITY = 2.5
 
 
 class FundamentalScoreCalculator:
