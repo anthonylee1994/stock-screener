@@ -10,38 +10,28 @@ from stock_screener.utils.screener_rules import (
 
 
 SCORE_COLUMN = FUNDAMENTAL_SCORE_COLUMN
+# 對齊 Potential Stock 嘅「護城河 + 增長 + 穩健」基本面指標：
+# 護城河 = ROE + Gross Margin；增長 = EPS / Sales Past 5Y；穩健 = Debt/Equity。
+# Market Cap 淨係計排名分數（weight 0），唔直接推高總分。
 SCORE_METRICS = [
     (MARKET_CAP_COLUMN, True, 0, "Market Cap Score"),
-    ("EPS Past 5Y", True, 0.16, "EPS Past 5Y Score"),
-    ("Sales Past 5Y", True, 0.07, "Sales Past 5Y Score"),
-    ("ROE", True, 0.12, "ROE Score"),
-    ("ROIC", True, 0.22, "ROIC Score"),
-    ("Profit Margin", True, 0.10, "Profit Margin Score"),
-    ("Forward P/E", False, 0.06, "Forward P/E Score"),
-    ("PEG", False, 0.13, "PEG Score"),
-    ("P/S", False, 0.03, "P/S Score"),
-    ("P/FCF", False, 0.06, "P/FCF Score"),
-    ("Debt/Equity", False, 0.05, "Debt/Equity Score"),
+    ("ROE", True, 0.25, "ROE Score"),
+    ("Gross Margin", True, 0.20, "Gross Margin Score"),
+    ("EPS Past 5Y", True, 0.25, "EPS Past 5Y Score"),
+    ("Sales Past 5Y", True, 0.15, "Sales Past 5Y Score"),
+    ("Debt/Equity", False, 0.15, "Debt/Equity Score"),
 ]
 SCORE_WEIGHTS = {metric: weight for metric, _, weight, _ in SCORE_METRICS}
 MIN_SECTOR_SCORE_SAMPLE_SIZE = 5
-CORE_SCORE_METRICS = ("ROIC", "EPS Past 5Y", "PEG", "P/FCF")
-MIN_CORE_SCORE_METRIC_COUNT = 3
+CORE_SCORE_METRICS = ("ROE", "Gross Margin", "EPS Past 5Y")
+MIN_CORE_SCORE_METRIC_COUNT = 2
 INSUFFICIENT_CORE_SCORE_CAP = 60.0
-CORE_SCORE_COLUMNS = ("ROIC Score", "EPS Past 5Y Score", "PEG Score", "P/FCF Score")
+CORE_SCORE_COLUMNS = ("ROE Score", "Gross Margin Score", "EPS Past 5Y Score")
 MIN_CORE_AVERAGE_SCORE = 70.0
 WEAK_CORE_SCORE_CAP = 75.0
-QUALITY_SCORE_COLUMNS = ("ROIC Score", "ROE Score", "Profit Margin Score")
+QUALITY_SCORE_COLUMNS = ("ROE Score", "Gross Margin Score")
 MIN_QUALITY_AVERAGE_SCORE = 55.0
 WEAK_QUALITY_SCORE_CAP = 70.0
-VALUATION_SCORE_COLUMNS = (
-    "Forward P/E Score",
-    "PEG Score",
-    "P/S Score",
-    "P/FCF Score",
-)
-MIN_VALUATION_AVERAGE_SCORE = 35.0
-EXPENSIVE_STOCK_SCORE_CAP = 82.0
 
 
 class FundamentalScoreCalculator:
@@ -123,8 +113,7 @@ class FundamentalScoreCalculator:
 
     def apply_score_guardrails(self, data: pd.DataFrame) -> pd.Series:
         guarded_score = self.apply_core_metric_guardrail(data)
-        guarded_score = self.apply_quality_guardrail(data, guarded_score)
-        return self.apply_valuation_guardrail(data, guarded_score)
+        return self.apply_quality_guardrail(data, guarded_score)
 
     def apply_core_metric_guardrail(self, data: pd.DataFrame) -> pd.Series:
         core_metric_data = pd.DataFrame(index=data.index)
@@ -157,20 +146,6 @@ class FundamentalScoreCalculator:
         return score.where(
             quality_average_score >= MIN_QUALITY_AVERAGE_SCORE,
             score.clip(upper=WEAK_QUALITY_SCORE_CAP),
-        )
-
-    def apply_valuation_guardrail(
-        self,
-        data: pd.DataFrame,
-        score: pd.Series,
-    ) -> pd.Series:
-        valuation_average_score = self.calculate_average_score(
-            data,
-            VALUATION_SCORE_COLUMNS,
-        )
-        return score.where(
-            valuation_average_score >= MIN_VALUATION_AVERAGE_SCORE,
-            score.clip(upper=EXPENSIVE_STOCK_SCORE_CAP),
         )
 
     def calculate_core_average_score(self, data: pd.DataFrame) -> pd.Series:

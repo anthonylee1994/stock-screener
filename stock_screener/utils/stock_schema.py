@@ -43,6 +43,7 @@ STOCKS_COLUMNS = {
     "Profit Margin": "REAL",
     "Profit Margin Score": "REAL",
     "Gross Margin": "REAL",
+    "Gross Margin Score": "REAL",
     "Operating Margin": "REAL",
     "Debt/Equity": "REAL",
     "Debt/Equity Score": "REAL",

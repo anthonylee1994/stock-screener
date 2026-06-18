@@ -109,29 +109,19 @@ def test_fundamental_score_calculator_scores_and_sorts_weighted_metrics():
             {
                 "Ticker": "WEAK",
                 "Market Cap": "1,000",
-                "PEG": "3",
-                "P/S": "10",
-                "P/FCF": "50",
-                "Forward P/E": "40",
+                "ROE": "10%",
+                "Gross Margin": "20%",
                 "EPS Past 5Y": "5%",
                 "Sales Past 5Y": "2%",
-                "ROE": "10%",
-                "ROIC": "10%",
-                "Profit Margin": "5%",
                 "Debt/Equity": "3",
             },
             {
                 "Ticker": "STRONG",
                 "Market Cap": "3,000",
-                "PEG": "1",
-                "P/S": "2",
-                "P/FCF": "10",
-                "Forward P/E": "15",
+                "ROE": "30%",
+                "Gross Margin": "60%",
                 "EPS Past 5Y": "25%",
                 "Sales Past 5Y": "20%",
-                "ROE": "30%",
-                "ROIC": "35%",
-                "Profit Margin": "25%",
                 "Debt/Equity": "0.2",
             },
         ]
@@ -139,10 +129,9 @@ def test_fundamental_score_calculator_scores_and_sorts_weighted_metrics():
     columns = [
         "Ticker",
         "Market Cap Score",
-        "PEG Score",
-        "EPS Past 5Y Score",
         "ROE Score",
-        "ROIC Score",
+        "Gross Margin Score",
+        "EPS Past 5Y Score",
         "Fundamental Score",
     ]
 
@@ -151,7 +140,7 @@ def test_fundamental_score_calculator_scores_and_sorts_weighted_metrics():
     assert scored["Ticker"].tolist() == ["STRONG", "WEAK"]
     assert scored.loc[0, "Fundamental Score"] == 100.0
     assert scored.loc[1, "Fundamental Score"] == 0.0
-    assert scored.loc[0, "PEG Score"] == 100.0
+    assert scored.loc[0, "ROE Score"] == 100.0
 
 
 def test_curve_score_scales_valid_scores_to_zero_and_one_hundred():
@@ -172,16 +161,11 @@ def test_fundamental_score_weights_are_balanced_and_sum_to_one():
     assert sum(SCORE_WEIGHTS.values()) == 1.0
     assert SCORE_WEIGHTS == {
         "Market Cap": 0,
-        "EPS Past 5Y": 0.16,
-        "Sales Past 5Y": 0.07,
-        "ROE": 0.12,
-        "ROIC": 0.22,
-        "Profit Margin": 0.10,
-        "Forward P/E": 0.06,
-        "PEG": 0.13,
-        "P/S": 0.03,
-        "P/FCF": 0.06,
-        "Debt/Equity": 0.05,
+        "ROE": 0.25,
+        "Gross Margin": 0.20,
+        "EPS Past 5Y": 0.25,
+        "Sales Past 5Y": 0.15,
+        "Debt/Equity": 0.15,
     }
 
 
@@ -189,22 +173,22 @@ def test_fundamental_score_calculator_scores_metrics_relative_to_sector():
     calculator = FundamentalScoreCalculator()
     data = pd.DataFrame(
         [
-            {"Ticker": "TECH_LOW", "Sector": "Technology", "ROIC": 10},
-            {"Ticker": "TECH_HIGH", "Sector": "Technology", "ROIC": 20},
-            {"Ticker": "TECH_MID", "Sector": "Technology", "ROIC": 15},
-            {"Ticker": "TECH_TOP", "Sector": "Technology", "ROIC": 25},
-            {"Ticker": "TECH_BOTTOM", "Sector": "Technology", "ROIC": 5},
-            {"Ticker": "ENERGY_LOW", "Sector": "Energy", "ROIC": 100},
-            {"Ticker": "ENERGY_HIGH", "Sector": "Energy", "ROIC": 500},
-            {"Ticker": "ENERGY_MID", "Sector": "Energy", "ROIC": 300},
-            {"Ticker": "ENERGY_TOP", "Sector": "Energy", "ROIC": 700},
-            {"Ticker": "ENERGY_BOTTOM", "Sector": "Energy", "ROIC": 50},
+            {"Ticker": "TECH_LOW", "Sector": "Technology", "ROE": 10},
+            {"Ticker": "TECH_HIGH", "Sector": "Technology", "ROE": 20},
+            {"Ticker": "TECH_MID", "Sector": "Technology", "ROE": 15},
+            {"Ticker": "TECH_TOP", "Sector": "Technology", "ROE": 25},
+            {"Ticker": "TECH_BOTTOM", "Sector": "Technology", "ROE": 5},
+            {"Ticker": "ENERGY_LOW", "Sector": "Energy", "ROE": 100},
+            {"Ticker": "ENERGY_HIGH", "Sector": "Energy", "ROE": 500},
+            {"Ticker": "ENERGY_MID", "Sector": "Energy", "ROE": 300},
+            {"Ticker": "ENERGY_TOP", "Sector": "Energy", "ROE": 700},
+            {"Ticker": "ENERGY_BOTTOM", "Sector": "Energy", "ROE": 50},
         ]
     )
 
     scored = calculator.add_score(
-        data, ["Ticker", "ROIC Score", "Fundamental Score"])
-    score_by_ticker = scored.set_index("Ticker")["ROIC Score"].to_dict()
+        data, ["Ticker", "ROE Score", "Fundamental Score"])
+    score_by_ticker = scored.set_index("Ticker")["ROE Score"].to_dict()
 
     assert score_by_ticker["TECH_TOP"] == 100.0
     assert score_by_ticker["TECH_BOTTOM"] == 0.0
@@ -217,18 +201,18 @@ def test_fundamental_score_calculator_falls_back_to_global_score_for_small_secto
     calculator = FundamentalScoreCalculator()
     data = pd.DataFrame(
         [
-            {"Ticker": "TECH_LOW", "Sector": "Technology", "ROIC": 10},
-            {"Ticker": "TECH_HIGH", "Sector": "Technology", "ROIC": 20},
-            {"Ticker": "TECH_MID", "Sector": "Technology", "ROIC": 15},
-            {"Ticker": "TECH_TOP", "Sector": "Technology", "ROIC": 25},
-            {"Ticker": "TECH_BOTTOM", "Sector": "Technology", "ROIC": 5},
-            {"Ticker": "HEALTH_ONLY", "Sector": " Healthcare ", "ROIC": 100},
-            {"Ticker": "MISSING_SECTOR", "Sector": " ", "ROIC": 50},
+            {"Ticker": "TECH_LOW", "Sector": "Technology", "ROE": 10},
+            {"Ticker": "TECH_HIGH", "Sector": "Technology", "ROE": 20},
+            {"Ticker": "TECH_MID", "Sector": "Technology", "ROE": 15},
+            {"Ticker": "TECH_TOP", "Sector": "Technology", "ROE": 25},
+            {"Ticker": "TECH_BOTTOM", "Sector": "Technology", "ROE": 5},
+            {"Ticker": "HEALTH_ONLY", "Sector": " Healthcare ", "ROE": 100},
+            {"Ticker": "MISSING_SECTOR", "Sector": " ", "ROE": 50},
         ]
     )
 
-    scored = calculator.add_score(data, ["Ticker", "ROIC Score"])
-    score_by_ticker = scored.set_index("Ticker")["ROIC Score"].to_dict()
+    scored = calculator.add_score(data, ["Ticker", "ROE Score"])
+    score_by_ticker = scored.set_index("Ticker")["ROE Score"].to_dict()
 
     assert score_by_ticker["HEALTH_ONLY"] == 100.0
     assert score_by_ticker["MISSING_SECTOR"] == 83.33
@@ -241,71 +225,46 @@ def test_fundamental_score_calculator_caps_score_when_core_metrics_are_missing()
             {
                 "Ticker": "INSUFFICIENT_CORE",
                 "Sector": "Technology",
-                "ROIC": pd.NA,
-                "EPS Past 5Y": pd.NA,
-                "PEG": 0.5,
-                "P/FCF": pd.NA,
                 "ROE": 100,
+                "Gross Margin": pd.NA,
+                "EPS Past 5Y": pd.NA,
                 "Sales Past 5Y": 100,
-                "Profit Margin": 100,
-                "Forward P/E": 1,
-                "P/S": 1,
                 "Debt/Equity": 0,
             },
             {
                 "Ticker": "HAS_CORE",
                 "Sector": "Technology",
-                "ROIC": 100,
-                "EPS Past 5Y": 100,
-                "PEG": pd.NA,
-                "P/FCF": 2,
                 "ROE": 90,
+                "Gross Margin": 90,
+                "EPS Past 5Y": 90,
                 "Sales Past 5Y": 90,
-                "Profit Margin": 90,
-                "Forward P/E": 2,
-                "P/S": 2,
                 "Debt/Equity": 0.1,
             },
             {
                 "Ticker": "PEER_LOW",
                 "Sector": "Technology",
-                "ROIC": 1,
-                "EPS Past 5Y": 1,
-                "PEG": 5,
-                "P/FCF": 50,
                 "ROE": 1,
+                "Gross Margin": 1,
+                "EPS Past 5Y": 1,
                 "Sales Past 5Y": 1,
-                "Profit Margin": 1,
-                "Forward P/E": 50,
-                "P/S": 50,
                 "Debt/Equity": 5,
             },
             {
                 "Ticker": "PEER_MID",
                 "Sector": "Technology",
-                "ROIC": 2,
-                "EPS Past 5Y": 2,
-                "PEG": 4,
-                "P/FCF": 40,
                 "ROE": 2,
+                "Gross Margin": 2,
+                "EPS Past 5Y": 2,
                 "Sales Past 5Y": 2,
-                "Profit Margin": 2,
-                "Forward P/E": 40,
-                "P/S": 40,
                 "Debt/Equity": 4,
             },
             {
                 "Ticker": "PEER_HIGH",
                 "Sector": "Technology",
-                "ROIC": 3,
-                "EPS Past 5Y": 3,
-                "PEG": 3,
-                "P/FCF": 30,
                 "ROE": 3,
+                "Gross Margin": 3,
+                "EPS Past 5Y": 3,
                 "Sales Past 5Y": 3,
-                "Profit Margin": 3,
-                "Forward P/E": 30,
-                "P/S": 30,
                 "Debt/Equity": 3,
             },
         ]
@@ -325,72 +284,47 @@ def test_fundamental_score_calculator_caps_score_when_core_scores_are_weak():
             {
                 "Ticker": "WEAK_CORE",
                 "Sector": "Technology",
-                "ROIC": 10,
+                "ROE": 10,
+                "Gross Margin": 10,
                 "EPS Past 5Y": 10,
-                "PEG": 1,
-                "ROE": 100,
                 "Sales Past 5Y": 100,
-                "Profit Margin": 100,
-                "P/FCF": 10,
-                "Forward P/E": 1,
-                "P/S": 1,
                 "Debt/Equity": 0,
             },
             {
                 "Ticker": "STRONG_CORE",
                 "Sector": "Technology",
-                "ROIC": 100,
+                "ROE": 100,
+                "Gross Margin": 100,
                 "EPS Past 5Y": 100,
-                "PEG": 0.2,
-                "ROE": 90,
                 "Sales Past 5Y": 90,
-                "Profit Margin": 90,
-                "P/FCF": 2,
-                "Forward P/E": 2,
-                "P/S": 2,
                 "Debt/Equity": 0.1,
             },
             {
                 "Ticker": "PEER_LOW",
                 "Sector": "Technology",
-                "ROIC": 5,
+                "ROE": 5,
+                "Gross Margin": 5,
                 "EPS Past 5Y": 5,
-                "PEG": 5,
-                "ROE": 1,
-                "Sales Past 5Y": 1,
-                "Profit Margin": 1,
-                "P/FCF": 50,
-                "Forward P/E": 50,
-                "P/S": 50,
+                "Sales Past 5Y": 5,
                 "Debt/Equity": 5,
             },
             {
                 "Ticker": "PEER_MID",
                 "Sector": "Technology",
-                "ROIC": 20,
-                "EPS Past 5Y": 20,
-                "PEG": 4,
-                "ROE": 2,
-                "Sales Past 5Y": 2,
-                "Profit Margin": 2,
-                "P/FCF": 40,
-                "Forward P/E": 40,
-                "P/S": 40,
-                "Debt/Equity": 4,
+                "ROE": 30,
+                "Gross Margin": 30,
+                "EPS Past 5Y": 30,
+                "Sales Past 5Y": 30,
+                "Debt/Equity": 3,
             },
             {
                 "Ticker": "PEER_HIGH",
                 "Sector": "Technology",
-                "ROIC": 30,
-                "EPS Past 5Y": 30,
-                "PEG": 3,
-                "ROE": 3,
-                "Sales Past 5Y": 3,
-                "Profit Margin": 3,
-                "P/FCF": 30,
-                "Forward P/E": 30,
-                "P/S": 30,
-                "Debt/Equity": 3,
+                "ROE": 50,
+                "Gross Margin": 50,
+                "EPS Past 5Y": 50,
+                "Sales Past 5Y": 50,
+                "Debt/Equity": 1,
             },
         ]
     )
@@ -409,72 +343,47 @@ def test_fundamental_score_calculator_caps_score_when_quality_is_weak():
             {
                 "Ticker": "WEAK_QUALITY",
                 "Sector": "Technology",
-                "ROIC": 2,
-                "EPS Past 5Y": 100,
-                "PEG": 0.1,
-                "P/FCF": 1,
                 "ROE": 2,
-                "Profit Margin": 2,
+                "Gross Margin": 2,
+                "EPS Past 5Y": 100,
                 "Sales Past 5Y": 100,
-                "Forward P/E": 1,
-                "P/S": 1,
                 "Debt/Equity": 0,
             },
             {
                 "Ticker": "STRONG_QUALITY",
                 "Sector": "Technology",
-                "ROIC": 100,
-                "EPS Past 5Y": 90,
-                "PEG": 0.2,
-                "P/FCF": 2,
                 "ROE": 100,
-                "Profit Margin": 100,
+                "Gross Margin": 100,
+                "EPS Past 5Y": 90,
                 "Sales Past 5Y": 90,
-                "Forward P/E": 2,
-                "P/S": 2,
                 "Debt/Equity": 0.1,
             },
             {
                 "Ticker": "PEER_LOW",
                 "Sector": "Technology",
-                "ROIC": 1,
-                "EPS Past 5Y": 1,
-                "PEG": 5,
-                "P/FCF": 50,
                 "ROE": 1,
-                "Profit Margin": 1,
+                "Gross Margin": 1,
+                "EPS Past 5Y": 1,
                 "Sales Past 5Y": 1,
-                "Forward P/E": 50,
-                "P/S": 50,
                 "Debt/Equity": 5,
             },
             {
                 "Ticker": "PEER_MID",
                 "Sector": "Technology",
-                "ROIC": 5,
-                "EPS Past 5Y": 5,
-                "PEG": 4,
-                "P/FCF": 40,
                 "ROE": 5,
-                "Profit Margin": 5,
+                "Gross Margin": 5,
+                "EPS Past 5Y": 5,
                 "Sales Past 5Y": 5,
-                "Forward P/E": 40,
-                "P/S": 40,
-                "Debt/Equity": 4,
+                "Debt/Equity": 3,
             },
             {
                 "Ticker": "PEER_HIGH",
                 "Sector": "Technology",
-                "ROIC": 6,
-                "EPS Past 5Y": 6,
-                "PEG": 3,
-                "P/FCF": 30,
-                "ROE": 6,
-                "Profit Margin": 6,
-                "Sales Past 5Y": 6,
-                "Forward P/E": 30,
-                "P/S": 30,
-                "Debt/Equity": 3,
+                "ROE": 50,
+                "Gross Margin": 50,
+                "EPS Past 5Y": 50,
+                "Sales Past 5Y": 50,
+                "Debt/Equity": 1,
             },
         ]
     )
@@ -486,111 +395,33 @@ def test_fundamental_score_calculator_caps_score_when_quality_is_weak():
     assert score_by_ticker["STRONG_QUALITY"] > 70.0
 
 
-def test_fundamental_score_calculator_caps_score_when_valuation_is_stretched():
-    calculator = FundamentalScoreCalculator()
-    data = pd.DataFrame(
-        [
-            {
-                "Ticker": "EXPENSIVE",
-                "Sector": "Technology",
-                "ROIC": 100,
-                "EPS Past 5Y": 100,
-                "PEG": 0.1,
-                "P/FCF": 100,
-                "ROE": 100,
-                "Profit Margin": 100,
-                "Sales Past 5Y": 100,
-                "Forward P/E": 100,
-                "P/S": 100,
-                "Debt/Equity": 0,
-            },
-            {
-                "Ticker": "REASONABLE",
-                "Sector": "Technology",
-                "ROIC": 90,
-                "EPS Past 5Y": 90,
-                "PEG": 0.5,
-                "P/FCF": 2,
-                "ROE": 90,
-                "Profit Margin": 90,
-                "Sales Past 5Y": 90,
-                "Forward P/E": 2,
-                "P/S": 2,
-                "Debt/Equity": 0.1,
-            },
-            {
-                "Ticker": "PEER_LOW",
-                "Sector": "Technology",
-                "ROIC": 1,
-                "EPS Past 5Y": 1,
-                "PEG": 5,
-                "P/FCF": 5,
-                "ROE": 1,
-                "Profit Margin": 1,
-                "Sales Past 5Y": 1,
-                "Forward P/E": 50,
-                "P/S": 50,
-                "Debt/Equity": 5,
-            },
-            {
-                "Ticker": "PEER_MID",
-                "Sector": "Technology",
-                "ROIC": 2,
-                "EPS Past 5Y": 2,
-                "PEG": 3,
-                "P/FCF": 4,
-                "ROE": 2,
-                "Profit Margin": 2,
-                "Sales Past 5Y": 2,
-                "Forward P/E": 30,
-                "P/S": 30,
-                "Debt/Equity": 4,
-            },
-            {
-                "Ticker": "PEER_HIGH",
-                "Sector": "Technology",
-                "ROIC": 3,
-                "EPS Past 5Y": 3,
-                "PEG": 2,
-                "P/FCF": 3,
-                "ROE": 3,
-                "Profit Margin": 3,
-                "Sales Past 5Y": 3,
-                "Forward P/E": 20,
-                "P/S": 20,
-                "Debt/Equity": 3,
-            },
-        ]
-    )
-
-    scored = calculator.add_score(data, ["Ticker", "Fundamental Score"])
-    score_by_ticker = scored.set_index("Ticker")["Fundamental Score"].to_dict()
-
-    assert score_by_ticker["EXPENSIVE"] == 82.0
-    assert score_by_ticker["REASONABLE"] > 82.0
-
-
 def test_fundamental_score_calculator_curves_final_score():
     calculator = FundamentalScoreCalculator()
     data = pd.DataFrame(
         [
             {
                 "Ticker": "LOW",
-                "ROIC": 10,
+                "ROE": 10,
+                "Gross Margin": 10,
                 "EPS Past 5Y": 10,
-                "PEG": 3,
+                "Sales Past 5Y": 10,
+                "Debt/Equity": 50,
             },
             {
                 "Ticker": "MID",
-                "ROIC": 20,
+                "ROE": 20,
+                "Gross Margin": 20,
                 "EPS Past 5Y": 20,
-                "PEG": 2,
+                "Sales Past 5Y": 20,
+                "Debt/Equity": 30,
             },
             {
                 "Ticker": "HIGH",
-                "ROIC": 30,
+                "ROE": 30,
+                "Gross Margin": 30,
                 "EPS Past 5Y": 30,
-                "PEG": 1,
+                "Sales Past 5Y": 30,
+                "Debt/Equity": 10,
             },
         ]
     )
