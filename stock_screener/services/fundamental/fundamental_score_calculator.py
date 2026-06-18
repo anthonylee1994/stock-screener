@@ -10,16 +10,17 @@ from stock_screener.utils.screener_rules import (
 
 
 SCORE_COLUMN = FUNDAMENTAL_SCORE_COLUMN
-# 對齊 Potential Stock 嘅「護城河 + 增長 + 穩健」基本面指標：
-# 護城河 = ROE + Gross Margin；增長 = EPS / Sales Past 5Y；穩健 = Debt/Equity。
+# 對齊 Potential Stock 嘅「護城河 + 增長 + 穩健」基本面指標，
+# 再保留少量 PEG 作估值 sanity check，避免極貴增長股霸榜。
 # Market Cap 淨係計排名分數（weight 0），唔直接推高總分。
 SCORE_METRICS = [
     (MARKET_CAP_COLUMN, True, 0, "Market Cap Score"),
-    ("ROE", True, 0.25, "ROE Score"),
-    ("Gross Margin", True, 0.20, "Gross Margin Score"),
-    ("EPS Past 5Y", True, 0.25, "EPS Past 5Y Score"),
-    ("Sales Past 5Y", True, 0.15, "Sales Past 5Y Score"),
+    ("ROE", True, 0.22, "ROE Score"),
+    ("Gross Margin", True, 0.18, "Gross Margin Score"),
+    ("EPS Past 5Y", True, 0.22, "EPS Past 5Y Score"),
+    ("Sales Past 5Y", True, 0.13, "Sales Past 5Y Score"),
     ("Debt/Equity", False, 0.15, "Debt/Equity Score"),
+    ("PEG", False, 0.10, "PEG Score"),
 ]
 SCORE_WEIGHTS = {metric: weight for metric, _, weight, _ in SCORE_METRICS}
 MIN_SECTOR_SCORE_SAMPLE_SIZE = 5
@@ -32,6 +33,8 @@ WEAK_CORE_SCORE_CAP = 75.0
 QUALITY_SCORE_COLUMNS = ("ROE Score", "Gross Margin Score")
 MIN_QUALITY_AVERAGE_SCORE = 55.0
 WEAK_QUALITY_SCORE_CAP = 70.0
+MIN_PEG_SCORE = 35.0
+EXPENSIVE_GROWTH_SCORE_CAP = 85.0
 
 
 class FundamentalScoreCalculator:
@@ -113,7 +116,8 @@ class FundamentalScoreCalculator:
 
     def apply_score_guardrails(self, data: pd.DataFrame) -> pd.Series:
         guarded_score = self.apply_core_metric_guardrail(data)
-        return self.apply_quality_guardrail(data, guarded_score)
+        guarded_score = self.apply_quality_guardrail(data, guarded_score)
+        return self.apply_peg_guardrail(data, guarded_score)
 
     def apply_core_metric_guardrail(self, data: pd.DataFrame) -> pd.Series:
         core_metric_data = pd.DataFrame(index=data.index)
@@ -146,6 +150,20 @@ class FundamentalScoreCalculator:
         return score.where(
             quality_average_score >= MIN_QUALITY_AVERAGE_SCORE,
             score.clip(upper=WEAK_QUALITY_SCORE_CAP),
+        )
+
+    def apply_peg_guardrail(
+        self,
+        data: pd.DataFrame,
+        score: pd.Series,
+    ) -> pd.Series:
+        if "PEG Score" in data.columns:
+            peg_score = to_numeric_series(data["PEG Score"])
+        else:
+            peg_score = pd.Series(0.0, index=data.index)
+        return score.where(
+            peg_score >= MIN_PEG_SCORE,
+            score.clip(upper=EXPENSIVE_GROWTH_SCORE_CAP),
         )
 
     def calculate_core_average_score(self, data: pd.DataFrame) -> pd.Series:

@@ -21,6 +21,7 @@ DEFAULT_COLUMNS = [
     "Market Cap Score",
     "Forward P/E",
     "PEG",
+    "PEG Score",
     "P/S",
     "P/FCF",
     "EPS Past 5Y",

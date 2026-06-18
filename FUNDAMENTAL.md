@@ -33,8 +33,9 @@
 | `EPS Past 5Y`   | 越大越好 | 過去 5 年每股盈利增長越高越好                              |
 | `Sales Past 5Y` | 越大越好 | 過去 5 年收入增長越高越好                                  |
 | `Debt/Equity`   | 越細越好 | 負債相對股本越低，財務槓桿風險越低                         |
+| `PEG`           | 越細越好 | 增長調整後估值越低越好，用嚟做平貴 sanity check             |
 
-`ROIC`、`Profit Margin`、`Forward P/E`、`PEG`、`P/S`、`P/FCF` 仍然會由 Finviz 攞嚟做顯示，但已經唔再納入 `Fundamental Score` 評分。
+`ROIC`、`Profit Margin`、`Forward P/E`、`P/S`、`P/FCF` 仍然會由 Finviz 攞嚟做顯示，但已經唔再納入 `Fundamental Score` 評分。
 
 ---
 
@@ -59,26 +60,28 @@
 
 ## 總分權重
 
-現時基本面評分對齊 Potential Stock 嘅「護城河 + 增長 + 穩健」，淨係評分以下 6 個指標（`Market Cap` 淨係計排名分數，weight 0，唔推高總分）：
+現時基本面評分主要對齊 Potential Stock 嘅「護城河 + 增長 + 穩健」，再保留 10% `PEG` 做估值 sanity check；`Market Cap` 淨係計排名分數，weight 0，唔推高總分：
 
 | 指標分數              | 比重    |
 | --------------------- | ------- |
-| `ROE Score`           | **25%** |
-| `EPS Past 5Y Score`   | **25%** |
-| `Gross Margin Score`  | **20%** |
-| `Sales Past 5Y Score` | **15%** |
+| `ROE Score`           | **22%** |
+| `EPS Past 5Y Score`   | **22%** |
+| `Gross Margin Score`  | **18%** |
 | `Debt/Equity Score`   | **15%** |
+| `Sales Past 5Y Score` | **13%** |
+| `PEG Score`           | **10%** |
 | `Market Cap Score`    | **0%**  |
 
 公式：
 
 ```text
 Fundamental Score =
-  (ROE Score * 0.25)
-+ (EPS Past 5Y Score * 0.25)
-+ (Gross Margin Score * 0.20)
-+ (Sales Past 5Y Score * 0.15)
+  (ROE Score * 0.22)
++ (EPS Past 5Y Score * 0.22)
++ (Gross Margin Score * 0.18)
 + (Debt/Equity Score * 0.15)
++ (Sales Past 5Y Score * 0.13)
++ (PEG Score * 0.10)
 + (Market Cap Score * 0.00)
 ```
 
@@ -86,13 +89,15 @@ Fundamental Score =
 
 1. 護城河 —— `ROE`（資本回報）+ `Gross Margin`（定價力）
 2. 增長 —— `EPS Past 5Y` + `Sales Past 5Y`
-3. 穩健 —— `Debt/Equity`；市值只顯示排名分數，唔直接推高總分
+3. 穩健 —— `Debt/Equity`
+4. 估值 sanity check —— `PEG` 只佔 10%，避免極貴增長股霸榜；市值只顯示排名分數，唔直接推高總分
 
 另外有幾條 guardrail：
 
 - `ROE`、`Gross Margin`、`EPS Past 5Y` 三個核心指標入面，至少要有 2 個有效數值；如果少過 2 個，`Fundamental Score` 最高只會係 60 分。
 - `ROE Score`、`Gross Margin Score`、`EPS Past 5Y Score` 三個核心分數平均要至少 70；如果低過 70，`Fundamental Score` 最高只會係 75 分。
 - `ROE Score` 同 `Gross Margin Score`（護城河）平均要至少 55；如果低過 55，`Fundamental Score` 最高只會係 70 分。
+- `PEG Score` 要至少 35；如果低過 35，代表增長調整後估值太貴，`Fundamental Score` 最高只會係 85 分。
 
 ---
 

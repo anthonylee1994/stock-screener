@@ -114,6 +114,7 @@ def test_fundamental_score_calculator_scores_and_sorts_weighted_metrics():
                 "EPS Past 5Y": "5%",
                 "Sales Past 5Y": "2%",
                 "Debt/Equity": "3",
+                "PEG": "3",
             },
             {
                 "Ticker": "STRONG",
@@ -123,6 +124,7 @@ def test_fundamental_score_calculator_scores_and_sorts_weighted_metrics():
                 "EPS Past 5Y": "25%",
                 "Sales Past 5Y": "20%",
                 "Debt/Equity": "0.2",
+                "PEG": "1",
             },
         ]
     )
@@ -132,6 +134,7 @@ def test_fundamental_score_calculator_scores_and_sorts_weighted_metrics():
         "ROE Score",
         "Gross Margin Score",
         "EPS Past 5Y Score",
+        "PEG Score",
         "Fundamental Score",
     ]
 
@@ -141,6 +144,7 @@ def test_fundamental_score_calculator_scores_and_sorts_weighted_metrics():
     assert scored.loc[0, "Fundamental Score"] == 100.0
     assert scored.loc[1, "Fundamental Score"] == 0.0
     assert scored.loc[0, "ROE Score"] == 100.0
+    assert scored.loc[0, "PEG Score"] == 100.0
 
 
 def test_curve_score_scales_valid_scores_to_zero_and_one_hundred():
@@ -161,11 +165,12 @@ def test_fundamental_score_weights_are_balanced_and_sum_to_one():
     assert sum(SCORE_WEIGHTS.values()) == 1.0
     assert SCORE_WEIGHTS == {
         "Market Cap": 0,
-        "ROE": 0.25,
-        "Gross Margin": 0.20,
-        "EPS Past 5Y": 0.25,
-        "Sales Past 5Y": 0.15,
+        "ROE": 0.22,
+        "Gross Margin": 0.18,
+        "EPS Past 5Y": 0.22,
+        "Sales Past 5Y": 0.13,
         "Debt/Equity": 0.15,
+        "PEG": 0.10,
     }
 
 
@@ -395,6 +400,70 @@ def test_fundamental_score_calculator_caps_score_when_quality_is_weak():
     assert score_by_ticker["STRONG_QUALITY"] > 70.0
 
 
+def test_fundamental_score_calculator_caps_score_when_peg_is_stretched():
+    calculator = FundamentalScoreCalculator()
+    data = pd.DataFrame(
+        [
+            {
+                "Ticker": "EXPENSIVE_GROWTH",
+                "Sector": "Technology",
+                "ROE": 100,
+                "Gross Margin": 100,
+                "EPS Past 5Y": 100,
+                "Sales Past 5Y": 100,
+                "Debt/Equity": 0,
+                "PEG": 10,
+            },
+            {
+                "Ticker": "REASONABLE_GROWTH",
+                "Sector": "Technology",
+                "ROE": 90,
+                "Gross Margin": 90,
+                "EPS Past 5Y": 90,
+                "Sales Past 5Y": 90,
+                "Debt/Equity": 0.1,
+                "PEG": 0.5,
+            },
+            {
+                "Ticker": "PEER_LOW",
+                "Sector": "Technology",
+                "ROE": 1,
+                "Gross Margin": 1,
+                "EPS Past 5Y": 1,
+                "Sales Past 5Y": 1,
+                "Debt/Equity": 5,
+                "PEG": 5,
+            },
+            {
+                "Ticker": "PEER_MID",
+                "Sector": "Technology",
+                "ROE": 2,
+                "Gross Margin": 2,
+                "EPS Past 5Y": 2,
+                "Sales Past 5Y": 2,
+                "Debt/Equity": 4,
+                "PEG": 4,
+            },
+            {
+                "Ticker": "PEER_HIGH",
+                "Sector": "Technology",
+                "ROE": 3,
+                "Gross Margin": 3,
+                "EPS Past 5Y": 3,
+                "Sales Past 5Y": 3,
+                "Debt/Equity": 3,
+                "PEG": 3,
+            },
+        ]
+    )
+
+    scored = calculator.add_score(data, ["Ticker", "Fundamental Score"])
+    score_by_ticker = scored.set_index("Ticker")["Fundamental Score"].to_dict()
+
+    assert score_by_ticker["EXPENSIVE_GROWTH"] == 85.0
+    assert score_by_ticker["REASONABLE_GROWTH"] > 85.0
+
+
 def test_fundamental_score_calculator_curves_final_score():
     calculator = FundamentalScoreCalculator()
     data = pd.DataFrame(
@@ -406,6 +475,7 @@ def test_fundamental_score_calculator_curves_final_score():
                 "EPS Past 5Y": 10,
                 "Sales Past 5Y": 10,
                 "Debt/Equity": 50,
+                "PEG": 3,
             },
             {
                 "Ticker": "MID",
@@ -414,6 +484,7 @@ def test_fundamental_score_calculator_curves_final_score():
                 "EPS Past 5Y": 20,
                 "Sales Past 5Y": 20,
                 "Debt/Equity": 30,
+                "PEG": 2,
             },
             {
                 "Ticker": "HIGH",
@@ -422,6 +493,7 @@ def test_fundamental_score_calculator_curves_final_score():
                 "EPS Past 5Y": 30,
                 "Sales Past 5Y": 30,
                 "Debt/Equity": 10,
+                "PEG": 1,
             },
         ]
     )

@@ -35,6 +35,7 @@ FUNDAMENTAL_FIELDS = {
     "target_price_upside": TARGET_PRICE_UPSIDE_COLUMN,
     "potential_stock": POTENTIAL_STOCK_COLUMN,
     "market_cap_score": "Market Cap Score",
+    "peg_score": "PEG Score",
     "eps_past_5y_score": "EPS Past 5Y Score",
     "sales_past_5y_score": "Sales Past 5Y Score",
     "roe_score": "ROE Score",
