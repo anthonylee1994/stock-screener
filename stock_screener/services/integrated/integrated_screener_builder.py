@@ -7,11 +7,15 @@ from stock_screener.services.common.score_curver import curve_score
 from stock_screener.services.common.series_normalizer import to_numeric_series
 from stock_screener.services.fundamental.fundamental_score_calculator import SCORE_COLUMN as FUNDAMENTAL_SCORE_COLUMN
 from stock_screener.services.fundamental.fundamental_screener_service import fundamental_screener_service
+from stock_screener.services.integrated.potential_stock_filter import PotentialStockFilter
 from stock_screener.services.technical.technical_score_calculator import SCORE_COLUMN as TECHNICAL_SCORE_COLUMN
 from stock_screener.services.technical.technical_screener_service import (
     technical_screener_service,
 )
-from stock_screener.utils.screener_rules import TOTAL_SCORE_COLUMN
+from stock_screener.utils.screener_rules import (
+    POTENTIAL_STOCK_COLUMN,
+    TOTAL_SCORE_COLUMN,
+)
 
 
 SCORE_COLUMN = TOTAL_SCORE_COLUMN
@@ -25,9 +29,11 @@ class IntegratedScreenerBuilder:
         self,
         fundamental_service=fundamental_screener_service,
         technical_service=technical_screener_service,
+        potential_stock_filter=None,
     ):
         self.fundamental_service = fundamental_service
         self.technical_service = technical_service
+        self.potential_stock_filter = potential_stock_filter or PotentialStockFilter()
 
     def build(self, limit: int) -> pd.DataFrame:
         started_at = time.monotonic()
@@ -49,6 +55,8 @@ class IntegratedScreenerBuilder:
             full_data = self.add_total_score(
                 fundamental_data.merge(technical_data, on="Ticker", how="left")
             )
+
+        full_data[POTENTIAL_STOCK_COLUMN] = self.potential_stock_filter.apply(full_data)
 
         logger.info(
             "完整篩選器資料已建立 limit=%s rows=%s elapsed=%.2fs",

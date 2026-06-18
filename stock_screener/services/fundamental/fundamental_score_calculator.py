@@ -6,7 +6,6 @@ from stock_screener.services.common.series_normalizer import to_numeric_series
 from stock_screener.utils.screener_rules import (
     FUNDAMENTAL_SCORE_COLUMN,
     MARKET_CAP_COLUMN,
-    POTENTIAL_STOCK_COLUMN,
 )
 
 
@@ -43,16 +42,6 @@ VALUATION_SCORE_COLUMNS = (
 )
 MIN_VALUATION_AVERAGE_SCORE = 35.0
 EXPENSIVE_STOCK_SCORE_CAP = 82.0
-MIN_POTENTIAL_EPS_PAST_5Y = 0.15
-MIN_POTENTIAL_SALES_PAST_5Y = 0.15
-MIN_POTENTIAL_ROE = 0.12
-MIN_POTENTIAL_ROIC = 0.08
-MIN_POTENTIAL_MARKET_CAP = 1_000_000_000
-MIN_POTENTIAL_PROFIT_MARGIN = 0.0
-MIN_POTENTIAL_VOLUME = 300_000
-MAX_POTENTIAL_PEG = 1.2
-MAX_POTENTIAL_FORWARD_PE = 40.0
-MAX_POTENTIAL_DEBT_EQUITY = 2.5
 
 
 class FundamentalScoreCalculator:
@@ -85,9 +74,6 @@ class FundamentalScoreCalculator:
         scored_data[SCORE_COLUMN] = score_frame.sum(axis=1).round(2)
         scored_data[SCORE_COLUMN] = curve_score(scored_data[SCORE_COLUMN]).round(2)
         scored_data[SCORE_COLUMN] = self.apply_score_guardrails(scored_data)
-        scored_data[POTENTIAL_STOCK_COLUMN] = self.calculate_potential_stock(
-            scored_data
-        )
         sorted_data = scored_data.sort_values(
             by=SCORE_COLUMN,
             ascending=False,
@@ -202,47 +188,3 @@ class FundamentalScoreCalculator:
             else:
                 scores[column] = pd.NA
         return scores.mean(axis=1).fillna(0.0)
-
-    def calculate_potential_stock(self, data: pd.DataFrame) -> pd.Series:
-        market_cap = self.metric(data, MARKET_CAP_COLUMN)
-        eps_past_5y = self.metric(data, "EPS Past 5Y")
-        sales_past_5y = self.metric(data, "Sales Past 5Y")
-        profit_margin = self.metric(data, "Profit Margin")
-        roe = self.metric(data, "ROE")
-        roic = self.metric(data, "ROIC")
-        peg = self.metric(data, "PEG")
-        forward_pe = self.metric(data, "Forward P/E")
-        debt_equity = self.metric(data, "Debt/Equity")
-        volume = self.metric(data, "Volume")
-        sma200 = self.metric(data, "200-Day Simple Moving Average")
-
-        mid_or_larger = market_cap >= MIN_POTENTIAL_MARKET_CAP
-        strong_growth = (eps_past_5y > MIN_POTENTIAL_EPS_PAST_5Y) | (
-            sales_past_5y > MIN_POTENTIAL_SALES_PAST_5Y
-        )
-        positive_profit_margin = profit_margin > MIN_POTENTIAL_PROFIT_MARGIN
-        high_roe = roe > MIN_POTENTIAL_ROE
-        efficient_capital_use = roic > MIN_POTENTIAL_ROIC
-        cheap_growth = peg < MAX_POTENTIAL_PEG
-        reasonable_forward_pe = forward_pe < MAX_POTENTIAL_FORWARD_PE
-        manageable_debt = debt_equity < MAX_POTENTIAL_DEBT_EQUITY
-        liquid_enough = volume >= MIN_POTENTIAL_VOLUME
-        above_sma200 = sma200 > 0
-
-        return (
-            mid_or_larger
-            & strong_growth
-            & positive_profit_margin
-            & cheap_growth
-            & reasonable_forward_pe
-            & high_roe
-            & efficient_capital_use
-            & manageable_debt
-            & liquid_enough
-            & above_sma200
-        ).fillna(False).astype(bool)
-
-    def metric(self, data: pd.DataFrame, column: str) -> pd.Series:
-        if column not in data.columns:
-            return pd.Series(pd.NA, index=data.index, dtype="Float64")
-        return to_numeric_series(data[column])
