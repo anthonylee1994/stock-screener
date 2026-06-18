@@ -35,10 +35,15 @@ FUNDAMENTAL_FIELDS = {
     "target_price_upside": TARGET_PRICE_UPSIDE_COLUMN,
     "potential_stock": POTENTIAL_STOCK_COLUMN,
     "market_cap_score": "Market Cap Score",
+    "forward_pe_score": "Forward P/E Score",
     "peg_score": "PEG Score",
+    "ps_score": "P/S Score",
+    "pfcf_score": "P/FCF Score",
     "eps_past_5y_score": "EPS Past 5Y Score",
     "sales_past_5y_score": "Sales Past 5Y Score",
     "roe_score": "ROE Score",
+    "roic_score": "ROIC Score",
+    "profit_margin_score": "Profit Margin Score",
     "gross_margin_score": "Gross Margin Score",
     "debt_equity_score": "Debt/Equity Score",
     "fundamental_score": FUNDAMENTAL_SCORE_COLUMN,
@@ -75,7 +80,9 @@ def format_record(row: pd.Series) -> dict:
         "name": clean_value(row.get("Company")),
         "sector": clean_value(row.get("Sector")),
         "market_cap": clean_value(row.get(MARKET_CAP_COLUMN)),
-        "price": clean_value(first_valid_value(row.get("Price"), row.get("Quote Price"))),
+        "price": clean_value(
+            first_valid_value(row.get("Price"), row.get("Quote Price"))
+        ),
         "target_price_upside": clean_value(row.get(TARGET_PRICE_UPSIDE_COLUMN)),
         "change": clean_value(calculate_change(row)),
         "change_percent": clean_value(

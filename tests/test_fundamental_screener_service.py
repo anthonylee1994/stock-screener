@@ -1,7 +1,11 @@
 import pandas as pd
 
 from stock_screener.services.fundamental.fundamental_screener_service import (
+    DEFAULT_COLUMNS,
     FundamentalScreenerService,
+)
+from stock_screener.services.fundamental.fundamental_score_calculator import (
+    SCORE_METRICS,
 )
 from stock_screener.utils.screener_rules import FUNDAMENTAL_SCORE_COLUMN
 
@@ -67,3 +71,12 @@ def test_fundamental_screener_service_runs_fetch_normalize_and_score_pipeline():
         {"Ticker": "AAPL", "PEG": 2.0, FUNDAMENTAL_SCORE_COLUMN: 100.0}
     ]
     assert result is not score_calculator.calls[0]["data"]
+
+
+def test_default_columns_include_calculated_fundamental_score_columns():
+    calculated_score_columns = [
+        score_column
+        for _, _, _, score_column in SCORE_METRICS
+    ]
+
+    assert set(calculated_score_columns).issubset(DEFAULT_COLUMNS)

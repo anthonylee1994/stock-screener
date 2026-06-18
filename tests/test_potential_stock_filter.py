@@ -4,18 +4,24 @@ from stock_screener.services.integrated.potential_stock_filter import PotentialS
 
 
 def _all_pass_stock(ticker, **overrides):
-    """一隻基本面 + 技術全部過關嘅 baseline stock。"""
+    """一隻 AI 半導體 quality momentum 條件全部過關嘅 baseline stock。"""
     data = {
         "Ticker": ticker,
-        "Market Cap": 20_000_000_000,  # >= 15B
-        "ROE": 0.20,  # >= 18%
-        "EPS Past 5Y": 0.20,  # >= 15%
-        "Sales Past 5Y": 0.20,  # >= 18%
-        "Debt/Equity": 1.0,  # < 1.5
-        "Gross Margin": 0.50,  # >= 40%
+        "Market Cap": 20_000_000_000,  # >= 10B
+        "Volume": 2_000_000,  # >= 1M
+        "Forward P/E": 25.0,  # 1-60
+        "PEG": 1.0,  # 0.01-1.5
+        "P/FCF": 50.0,  # 1-180
+        "ROE": 0.20,  # >= 15%
+        "ROIC": 0.15,  # >= 10%
+        "Profit Margin": 0.20,  # >= 10%
+        "EPS Past 5Y": 0.20,  # >= 10%
+        "Sales Past 5Y": 0.20,  # >= 10%
+        "Debt/Equity": 1.0,  # <= 1.5
         "ROC125": 0.20,
+        "ROC20": 0.05,  # > -15%
         "EMA200Distance": 0.05,  # > 0 (Price > EMA200)
-        "RSI14": 55.0,  # ∈ [40, 78]
+        "RSI14": 55.0,  # ∈ [35, 75]
     }
     data.update(overrides)
     return data
@@ -35,48 +41,88 @@ def test_potential_stock_filter_baseline_passes():
 
 
 def test_potential_stock_filter_fundamental_boundaries():
-    # Market Cap >= 15B
-    assert _apply_one(**{"Market Cap": 15_000_000_000}) is True
-    assert _apply_one(**{"Market Cap": 14_999_999_999}) is False
+    # Market Cap >= 10B
+    assert _apply_one(**{"Market Cap": 10_000_000_000}) is True
+    assert _apply_one(**{"Market Cap": 9_999_999_999}) is False
 
-    # ROE >= 18%
-    assert _apply_one(**{"ROE": 0.18}) is True
-    assert _apply_one(**{"ROE": 0.1799}) is False
+    # Volume >= 1M
+    assert _apply_one(**{"Volume": 1_000_000}) is True
+    assert _apply_one(**{"Volume": 999_999}) is False
 
-    # EPS Past 5Y >= 15% OR Sales Past 5Y >= 18%
-    assert _apply_one(**{"EPS Past 5Y": 0.15, "Sales Past 5Y": 0.10}) is True
-    assert _apply_one(**{"EPS Past 5Y": 0.10, "Sales Past 5Y": 0.18}) is True
-    assert _apply_one(**{"EPS Past 5Y": 0.149, "Sales Past 5Y": 0.179}) is False
+    # Forward P/E between 1 and 60
+    assert _apply_one(**{"Forward P/E": 1.0}) is True
+    assert _apply_one(**{"Forward P/E": 60.0}) is True
+    assert _apply_one(**{"Forward P/E": 0.99}) is False
+    assert _apply_one(**{"Forward P/E": 60.01}) is False
+
+    # PEG between 0.01 and 1.5
+    assert _apply_one(**{"PEG": 0.01}) is True
+    assert _apply_one(**{"PEG": 1.5}) is True
+    assert _apply_one(**{"PEG": 0.009}) is False
+    assert _apply_one(**{"PEG": 1.501}) is False
+
+    # P/FCF between 1 and 180
+    assert _apply_one(**{"P/FCF": 1.0}) is True
+    assert _apply_one(**{"P/FCF": 180.0}) is True
+    assert _apply_one(**{"P/FCF": 0.99}) is False
+    assert _apply_one(**{"P/FCF": 180.01}) is False
+
+    # ROE >= 15%
+    assert _apply_one(**{"ROE": 0.15}) is True
+    assert _apply_one(**{"ROE": 0.1499}) is False
+
+    # ROIC >= 10%
+    assert _apply_one(**{"ROIC": 0.10}) is True
+    assert _apply_one(**{"ROIC": 0.0999}) is False
+
+    # Profit Margin >= 10%
+    assert _apply_one(**{"Profit Margin": 0.10}) is True
+    assert _apply_one(**{"Profit Margin": 0.0999}) is False
+
+    # EPS Past 5Y >= 10% AND Sales Past 5Y >= 10%
+    assert _apply_one(**{"EPS Past 5Y": 0.10, "Sales Past 5Y": 0.10}) is True
+    assert _apply_one(**{"EPS Past 5Y": 0.099, "Sales Past 5Y": 0.20}) is False
+    assert _apply_one(**{"EPS Past 5Y": 0.20, "Sales Past 5Y": 0.099}) is False
     assert _apply_one(**{"EPS Past 5Y": pd.NA, "Sales Past 5Y": pd.NA}) is False
-    # OR 語義：EPS 缺但 Sales 夠 -> 仍過增長關
-    assert _apply_one(**{"EPS Past 5Y": pd.NA, "Sales Past 5Y": 0.20}) is True
+    assert _apply_one(**{"EPS Past 5Y": pd.NA, "Sales Past 5Y": 0.20}) is False
 
-    # Debt/Equity < 1.5
-    assert _apply_one(**{"Debt/Equity": 1.49}) is True
-    assert _apply_one(**{"Debt/Equity": 1.5}) is False
-
-    # Gross Margin >= 40%
-    assert _apply_one(**{"Gross Margin": 0.40}) is True
-    assert _apply_one(**{"Gross Margin": 0.3999}) is False
+    # Debt/Equity <= 1.5
+    assert _apply_one(**{"Debt/Equity": 1.5}) is True
+    assert _apply_one(**{"Debt/Equity": 1.5001}) is False
 
 
 def test_potential_stock_filter_technical_boundaries():
+    # ROC125 between 10% and 400%
+    assert _apply_one(**{"ROC125": 0.10}) is True
+    assert _apply_one(**{"ROC125": 4.0}) is True
+    assert _apply_one(**{"ROC125": 0.099}) is False
+    assert _apply_one(**{"ROC125": 4.001}) is False
+
+    # ROC20 > -15%
+    assert _apply_one(**{"ROC20": -0.149}) is True
+    assert _apply_one(**{"ROC20": -0.15}) is False
+
     # Price > EMA200 (EMA200Distance > 0)
     assert _apply_one(**{"EMA200Distance": 0.0001}) is True
     assert _apply_one(**{"EMA200Distance": 0.0}) is False
     assert _apply_one(**{"EMA200Distance": -0.0001}) is False
 
-    # RSI14 ∈ [40, 78]（兩端 inclusive）
-    assert _apply_one(**{"RSI14": 40.0}) is True
-    assert _apply_one(**{"RSI14": 78.0}) is True
-    assert _apply_one(**{"RSI14": 39.99}) is False
-    assert _apply_one(**{"RSI14": 78.01}) is False
+    # RSI14 ∈ [35, 75]（兩端 inclusive）
+    assert _apply_one(**{"RSI14": 35.0}) is True
+    assert _apply_one(**{"RSI14": 75.0}) is True
+    assert _apply_one(**{"RSI14": 34.99}) is False
+    assert _apply_one(**{"RSI14": 75.01}) is False
 
     # 缺任何一個輸入 -> False
     assert _apply_one(**{"ROE": pd.NA}) is False
     assert _apply_one(**{"Debt/Equity": pd.NA}) is False
-    assert _apply_one(**{"Gross Margin": pd.NA}) is False
+    assert _apply_one(**{"Forward P/E": pd.NA}) is False
+    assert _apply_one(**{"PEG": pd.NA}) is False
+    assert _apply_one(**{"P/FCF": pd.NA}) is False
+    assert _apply_one(**{"ROIC": pd.NA}) is False
+    assert _apply_one(**{"Profit Margin": pd.NA}) is False
     assert _apply_one(**{"EMA200Distance": pd.NA}) is False
+    assert _apply_one(**{"ROC20": pd.NA}) is False
     assert _apply_one(**{"RSI14": pd.NA}) is False
     assert _apply_one(**{"ROC125": pd.NA}) is False
 

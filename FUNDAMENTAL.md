@@ -103,46 +103,69 @@ Fundamental Score =
 
 ## Potential Stock 點計？
 
-`Potential Stock` 係 boolean filter，唔係 `Fundamental Score` 嘅一部分。佢要基本面同技術面「雙強」同時成立先會標記——護城河 + 增長嘅基本面硬篩，加上動量 + 趨勢嘅技術確認。
+`Potential Stock` 係 boolean filter，唔係 `Fundamental Score` 嘅一部分。佢而家對齊「AI 半導體 quality momentum」邏輯：先搵 large-cap、高 ROE/ROIC、正現金流估值合理嘅公司，再用中期動量同 EMA200 趨勢確認。
 
 ### 基本面硬篩（全部要過）
 
 ```text
-(Market Cap >= 15B)
+(Market Cap >= 10B)
 AND
-(ROE >= 18%)
+(Volume >= 1M)
 AND
-(EPS Past 5Y >= 15% OR Sales Past 5Y >= 18%)
+(Forward P/E between 1 and 60)
 AND
-(Debt/Equity < 1.5)
+(PEG between 0.01 and 1.5)
 AND
-(Gross Margin >= 40%)
+(P/FCF between 1 and 180)
+AND
+(ROE >= 15%)
+AND
+(ROIC >= 10%)
+AND
+(Profit Margin >= 10%)
+AND
+(EPS Past 5Y >= 10%)
+AND
+(Sales Past 5Y >= 10%)
+AND
+(Debt/Equity <= 1.5)
 ```
 
 ### 技術確認（全部要過）
 
 ```text
+(ROC125 between 10% and 400%)
+AND
 (ROC125 >= 全市場 60th percentile)
+AND
+(ROC20 > -15%)
 AND
 (Price > EMA200)
 AND
-(RSI14 ∈ [40, 78])
+(RSI14 ∈ [35, 75])
 ```
 
 兩者同時通過先標記為 `Potential Stock`。
 
 | 類別     | 條件                         | 門檻                                   |
 | -------- | ---------------------------- | -------------------------------------- |
-| 市值     | `Market Cap`                 | `>= 15B`（mega/large cap + 流動性）    |
-| 護城河   | `ROE`                        | `>= 18%`                               |
-| 增長     | `EPS Past 5Y` 或 `Sales Past 5Y` | `>= 15%` / `>= 18%`（兩者其一）    |
-| 資產負債 | `Debt/Equity`                | `< 1.5`                                |
-| 定價力   | `Gross Margin`               | `>= 40%`                               |
-| 動量     | `ROC125`                     | `>= 全市場 60th percentile`（用 rank） |
+| 市值     | `Market Cap`                 | `>= 10B`（large cap universe）         |
+| 流動性   | `Volume`                     | `>= 1M`                                |
+| 估值     | `Forward P/E`                | `1-60`                                 |
+| 估值     | `PEG`                        | `0.01-1.5`                             |
+| 現金流估值 | `P/FCF`                    | `1-180`                                |
+| 護城河   | `ROE`                        | `>= 15%`                               |
+| 資本效率 | `ROIC`                       | `>= 10%`                               |
+| 盈利質素 | `Profit Margin`              | `>= 10%`                               |
+| 增長     | `EPS Past 5Y`                | `>= 10%`                               |
+| 增長     | `Sales Past 5Y`              | `>= 10%`                               |
+| 資產負債 | `Debt/Equity`                | `<= 1.5`                               |
+| 動量     | `ROC125`                     | `10%-400%` 並且 `>= 全市場 60th percentile` |
+| 短線風險 | `ROC20`                      | `> -15%`                               |
 | 趨勢     | `EMA200Distance`             | `> 0`，等同 `Price > EMA200`           |
-| 強度     | `RSI14`                      | `∈ [40, 78]`（唔超買唔超賣）           |
+| 強度     | `RSI14`                      | `∈ [35, 75]`（唔超買唔超賣）           |
 
-`ROC125` 用全市場 rank 計 percentile，避免 raw ROC 數值有 noise。如果相關資料缺失（包括某隻股票冇技術數據），`Potential Stock` 會當 `False`，唔會用 `NULL`。系統內部將百分比欄位儲存成 ratio，例如 `15%` 係 `0.15`；`Debt/Equity` 係 ratio（唔係百分比）。API 可以用 `potential_stock=true` 篩走非潛力股。
+`ROC125` 同時用 raw range 同全市場 rank：raw range 避免太弱或者 split/spin-off artifact，percentile rank 避免單日市場 noise。如果相關資料缺失（包括某隻股票冇技術數據），`Potential Stock` 會當 `False`，唔會用 `NULL`。系統內部將百分比欄位儲存成 ratio，例如 `15%` 係 `0.15`；`Debt/Equity` 係 ratio（唔係百分比）。API 可以用 `potential_stock=true` 篩走非潛力股。
 
 呢個 filter 係基本面 + 技術面資料做到嘅 proxy，唔等於真正 analyst revision model 或擇時模型。佢冇直接睇 30-90 日 EPS estimate revision、訂單 backlog、指引同 SEC filing；中咗 filter 只代表值得再深挖。
 

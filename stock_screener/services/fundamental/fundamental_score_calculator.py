@@ -10,27 +10,37 @@ from stock_screener.utils.screener_rules import (
 
 
 SCORE_COLUMN = FUNDAMENTAL_SCORE_COLUMN
-# 對齊 Potential Stock 嘅「護城河 + 增長 + 穩健」基本面指標，
-# 再保留少量 PEG 作估值 sanity check，避免極貴增長股霸榜。
+# 對齊 Potential Stock 嘅「AI 半導體 quality momentum」基本面指標：
+# 質素 45% / 增長 25% / 估值 20% / 槓桿 10%。
 # Market Cap 淨係計排名分數（weight 0），唔直接推高總分。
 SCORE_METRICS = [
     (MARKET_CAP_COLUMN, True, 0, "Market Cap Score"),
-    ("ROE", True, 0.22, "ROE Score"),
-    ("Gross Margin", True, 0.18, "Gross Margin Score"),
-    ("EPS Past 5Y", True, 0.22, "EPS Past 5Y Score"),
-    ("Sales Past 5Y", True, 0.13, "Sales Past 5Y Score"),
-    ("Debt/Equity", False, 0.15, "Debt/Equity Score"),
-    ("PEG", False, 0.10, "PEG Score"),
+    ("ROE", True, 0.15, "ROE Score"),
+    ("ROIC", True, 0.15, "ROIC Score"),
+    ("Profit Margin", True, 0.15, "Profit Margin Score"),
+    ("Gross Margin", True, 0, "Gross Margin Score"),
+    ("EPS Past 5Y", True, 0.15, "EPS Past 5Y Score"),
+    ("Sales Past 5Y", True, 0.10, "Sales Past 5Y Score"),
+    ("Forward P/E", False, 0.07, "Forward P/E Score"),
+    ("PEG", False, 0.07, "PEG Score"),
+    ("P/S", False, 0, "P/S Score"),
+    ("P/FCF", False, 0.06, "P/FCF Score"),
+    ("Debt/Equity", False, 0.10, "Debt/Equity Score"),
 ]
 SCORE_WEIGHTS = {metric: weight for metric, _, weight, _ in SCORE_METRICS}
 MIN_SECTOR_SCORE_SAMPLE_SIZE = 5
-CORE_SCORE_METRICS = ("ROE", "Gross Margin", "EPS Past 5Y")
-MIN_CORE_SCORE_METRIC_COUNT = 2
+CORE_SCORE_METRICS = ("ROE", "ROIC", "Profit Margin", "EPS Past 5Y")
+MIN_CORE_SCORE_METRIC_COUNT = 3
 INSUFFICIENT_CORE_SCORE_CAP = 60.0
-CORE_SCORE_COLUMNS = ("ROE Score", "Gross Margin Score", "EPS Past 5Y Score")
+CORE_SCORE_COLUMNS = (
+    "ROE Score",
+    "ROIC Score",
+    "Profit Margin Score",
+    "EPS Past 5Y Score",
+)
 MIN_CORE_AVERAGE_SCORE = 70.0
 WEAK_CORE_SCORE_CAP = 75.0
-QUALITY_SCORE_COLUMNS = ("ROE Score", "Gross Margin Score")
+QUALITY_SCORE_COLUMNS = ("ROE Score", "ROIC Score", "Profit Margin Score")
 MIN_QUALITY_AVERAGE_SCORE = 55.0
 WEAK_QUALITY_SCORE_CAP = 70.0
 MIN_PEG_SCORE = 35.0

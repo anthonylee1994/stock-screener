@@ -89,17 +89,17 @@ merges a JSON body if one is provided, but the route is exposed as `GET`.
 
 ### Query Parameters
 
-| Field             | Type    | Default       | Description                                                                                                                        |
-| ----------------- | ------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `api_token`       | string  | required      | Must match the configured API token.                                                                                               |
-| `sector`          | string  | `All`         | Sector filter. Use `All` for no sector filter.                                                                                     |
-| `market_cap`      | string  | `+large`      | Market-cap filter. Supported API values: `+mid`, `+large`, `mid`, `large`, `mega`.                                                 |
-| `search`          | string  | empty         | Case-insensitive substring search against ticker and company/name.                                                                 |
-| `potential_stock` | boolean | `false`       | When true, only returns rows flagged as potential stocks. Accepted true values include `1`, `true`, `yes`, `y`, and `on`.          |
+| Field             | Type    | Default       | Description                                                                                                                                               |
+| ----------------- | ------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `api_token`       | string  | required      | Must match the configured API token.                                                                                                                      |
+| `sector`          | string  | `All`         | Sector filter. Use `All` for no sector filter.                                                                                                            |
+| `market_cap`      | string  | `+large`      | Market-cap filter. Supported API values: `+mid`, `+large`, `mid`, `large`, `mega`.                                                                        |
+| `search`          | string  | empty         | Case-insensitive substring search against ticker and company/name.                                                                                        |
+| `potential_stock` | boolean | `false`       | When true, only returns rows flagged as potential stocks. Accepted true values include `1`, `true`, `yes`, `y`, and `on`.                                 |
 | `order`           | string  | `total_score` | Sort field. Supported API values: `market_cap`, `fundamental_score`, `technical_score`, `total_score`, `change_percent`, `volume`, `target_price_upside`. |
-| `ascend`          | boolean | `false`       | Sort ascending when true. Accepted true values include `1`, `true`, `yes`, `y`, and `on`. Anything else is treated false.          |
-| `limit`           | integer | `100`         | Number of rows to return for this page. Values below `1` become `1`; values above `100` become `100`.                              |
-| `offset`          | integer | `0`           | Number of matching rows to skip before returning this page. Values below `0` become `0`.                                           |
+| `ascend`          | boolean | `false`       | Sort ascending when true. Accepted true values include `1`, `true`, `yes`, `y`, and `on`. Anything else is treated false.                                 |
+| `limit`           | integer | `100`         | Number of rows to return for this page. Values below `1` become `1`; values above `100` become `100`.                                                     |
+| `offset`          | integer | `0`           | Number of matching rows to skip before returning this page. Values below `0` become `0`.                                                                  |
 
 ### `POST /auth`
 
@@ -202,36 +202,40 @@ Success:
       "total_score": 80.72,
       "potential_stock": false,
       "fundamental": {
-        "market_cap": 5475280000000.0,
-        "forward_pe": 19.95,
-        "peg": 0.5,
-        "ps": 20.45,
-        "pfcf": 28.45,
-        "eps_past_5y": 0.9527,
-        "sales_past_5y": 0.669,
-        "roe": 1.0149,
-        "roic": 0.7482,
-        "profit_margin": 0.6297,
         "debt_equity": 0.07,
+        "debt_equity_score": 75.73,
+        "eps_past_5y": 0.9527,
+        "eps_past_5y_score": 98.8,
         "eps_quarter_over_quarter": 2.1342,
-        "sales_quarter_over_quarter": 0.8523,
-        "operating_margin": 0.6402,
-        "short_interest": 0.0128,
-        "high_52w": -0.0942,
-        "target_price": 306.8,
-        "potential_stock": false,
+        "forward_pe": 16.77,
+        "forward_pe_score": 62.83,
+        "fundamental_score": 99.82,
+        "gross_margin": 0.7415,
+        "gross_margin_score": 79.44,
+        "high_52w": -0.1152,
+        "market_cap": 5065060000000.0,
         "market_cap_score": 100.0,
-        "forward_pe_score": 59.18,
-        "peg_score": 95.92,
-        "ps_score": 31.63,
-        "pfcf_score": 72.45,
-        "eps_past_5y_score": 91.84,
-        "sales_past_5y_score": 95.92,
-        "roe_score": 93.88,
-        "roic_score": 91.84,
-        "profit_margin_score": 93.88,
-        "debt_equity_score": 83.67,
-        "fundamental_score": 88.16
+        "operating_margin": 0.6402,
+        "peg": 0.37,
+        "peg_score": 93.69,
+        "pfcf": 47.75,
+        "pfcf_score": 31.19,
+        "potential_stock": 1,
+        "profit_margin": 0.6297,
+        "profit_margin_score": 98.39,
+        "ps": 19.98,
+        "ps_score": 17.34,
+        "roe": 1.1429,
+        "roe_score": 97.46,
+        "roic": 0.7717,
+        "roic_score": 99.6,
+        "sales_past_5y": 0.669,
+        "sales_past_5y_score": 98.64,
+        "sales_quarter_over_quarter": 0.8523,
+        "short_interest": 0.0123,
+        "sma200": 0.1022,
+        "target_price": 309.93,
+        "target_price_upside": 0.4808
       },
       "technical": {
         "long_term_score": 64.29,
