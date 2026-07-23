@@ -1,5 +1,6 @@
 import pandas as pd
-from finvizfinance.screener.custom import Custom
+
+from stock_screener.services.fundamental.finviz_custom_screener import FinvizCustomScreener
 
 
 FUNDAMENTAL_FILTERS = {
@@ -41,7 +42,7 @@ CUSTOM_COLUMNS = [
 
 class FundamentalScreenerClient:
     def fetch(self, limit: int) -> pd.DataFrame:
-        screener = Custom()
+        screener = FinvizCustomScreener()
         screener.set_filter(filters_dict=FUNDAMENTAL_FILTERS.copy())
         result = screener.screener_view(
             order=DEFAULT_ORDER,
