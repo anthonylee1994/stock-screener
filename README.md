@@ -1,8 +1,8 @@
 # Stock Screener API
 
-Flask API for an integrated US stock screener. It combines Finviz fundamental
-screening and quote data, Yahoo Finance technical indicators, and a weighted
-total score.
+Rust API for an integrated US stock screener, built on `axum`. It combines
+Finviz fundamental screening and quote data, Yahoo Finance technical
+indicators, and a weighted total score.
 
 ## Features
 
@@ -17,21 +17,24 @@ total score.
   indicators.
 - Stores the full screener result in SQLite so API
   requests do not trigger a full refresh.
-- Supports stock table refreshes through the `scripts.update_stocks` command.
+- Supports stock table refreshes through the `update_stocks` command.
 - Stores Finviz quote fields with the screener result.
 - Applies sector, market-cap, search, sorting, and response limiting on the
   database side.
 
 ## Requirements
 
-- Python 3.14+
-- `uv`
+- Rust 1.90+ (2024 edition)
+- A C toolchain and `cmake`, for the bundled SQLite and TLS crates
 
 ## Project Structure
 
 ```text
-stock_screener/
-  app.py                 Flask app factory and Gunicorn entrypoint
+src/
+  main.rs                Web server entrypoint
+  app.rs                 Router, CORS and startup wiring
+  models.rs              StockRow / TechnicalRow and their SQLite mapping
+  bin/update_stocks.rs   Manual refresh command
   controllers/           HTTP route handlers
   services/
     api/                 API request/response orchestration
@@ -40,17 +43,16 @@ stock_screener/
     integrated/          Combined fundamental/technical screener builder
     technical/           Yahoo Finance prices and technical scoring
   utils/                 SQLite schema, queries, and persistence helpers
-scripts/
-  update_stocks.py   Manual refresh command
+tests/
+  api.rs                 End-to-end HTTP tests
 data/
-  db.sqlite          Local SQLite database (ignored by git)
+  db.sqlite              Local SQLite database (ignored by git)
 ```
 
 ## Run Locally
 
 ```bash
-uv sync
-uv run python -m stock_screener.app
+cargo run --release
 ```
 
 The server listens on:
@@ -61,20 +63,25 @@ http://localhost:3000
 
 On startup, the app initializes the configured SQLite database. If the
 `stocks` table already has rows, the server uses those rows without refreshing
-quote data. If the table is empty, run `scripts.update_stocks` to populate it
-before expecting useful screener results. Scheduled refreshes should be run
-outside the web process, for example by server crontab calling
-`scripts.update_stocks`.
+quote data. If the table is empty, run `update_stocks` to populate it before
+expecting useful screener results. Scheduled refreshes should be run outside
+the web process, for example by server crontab calling `update_stocks`:
+
+```bash
+cargo run --release --bin update_stocks -- --limit 10000
+```
 
 ## Configuration
 
 | Variable         | Default            | Description                      |
 | ---------------- | ------------------ | -------------------------------- |
-| `PORT`           | `3000`             | Port used by Gunicorn in Dokku.  |
+| `PORT`           | `3000`             | Port the HTTP server binds to.   |
 | `SQLITE_DB_PATH` | `./data/db.sqlite` | SQLite database path for stocks. |
+| `API_TOKEN`      | unset              | Token every request must supply. |
 
-The API token is configured in
-`stock_screener/services/api/screener_service.py`.
+`API_TOKEN` is read from the environment, and from a local `.env` file when one
+is present. **When `API_TOKEN` is unset, a request that omits `api_token` is
+treated as authorized**, so always set it outside local development.
 
 ## API
 
@@ -267,20 +274,26 @@ screened stock pool:
   `ROIC`, `Profit Margin`
 - Lower is better: `Forward P/E`, `PEG`, `P/S`, `P/FCF`, `Debt/Equity`
 
-`Fundamental Score` uses percentage weights from `SCORE_WEIGHTS` in
-`stock_screener/services/fundamental/fundamental_score_calculator.py`.
+`Fundamental Score` uses the weights in `SCORE_METRICS` in
+`src/services/fundamental/fundamental_score_calculator.rs`, then curves the
+weighted sum onto `0`-`100` and applies the core-metric, quality and PEG
+guardrail caps in the same file.
 
 `Potential Stock` is a separate boolean flag, not part of `Fundamental Score`.
-It mirrors the current Finviz screen and is true when all rules match:
+It needs every fundamental *and* every technical rule in
+`src/services/integrated/potential_stock_filter.rs` to pass:
 
-- Size: `Market Cap >= 2B`
-- Quality: `ROE > 15%`
-- Profitability: `Profit Margin > 0`
-- Growth: `EPS Past 5Y > 15%` or `Sales Past 5Y > 15%`
-- Valuation: `PEG < 1`
-- Liquidity: `Volume >= 500K`
-- Trend: `200-Day Simple Moving Average > 0`, matching Finviz
-  `Price above SMA200`.
+- Size: `Market Cap >= 10B`
+- Liquidity: `Volume >= 1M`
+- Valuation: `Forward P/E` in `1`-`60`, `PEG` in `0.01`-`1.5`,
+  `P/FCF` in `1`-`180`
+- Quality: `ROE >= 15%`, `ROIC >= 10%`, `Profit Margin >= 10%`
+- Growth: `EPS Past 5Y >= 10%` and `Sales Past 5Y >= 10%`
+- Leverage: `Debt/Equity <= 1.5`
+- Momentum: `ROC125` in `10%`-`400%` and at or above the whole-market 60th
+  percentile, `ROC20 > -15%`
+- Trend: `EMA200Distance > 0`
+- Not overbought or oversold: `RSI14` in `35`-`75`
 
 Missing required potential-stock inputs are treated as false. Percent-like
 Finviz fields, including `ROE`, are stored as ratios, so `12.5%` is returned
@@ -295,7 +308,7 @@ Technical Score = Long Term Score * 0.6 + Mid Term Score * 0.3 + Short Term Scor
 Integrated scoring:
 
 ```text
-Raw Total Score = Fundamental Score * 0.6 + Technical Score * 0.4
+Raw Total Score = Fundamental Score * 0.75 + Technical Score * 0.25
 Total Score = min-max curve Raw Total Score to 0-100
 ```
 
@@ -310,19 +323,29 @@ Rows without a total score are filtered out before response sorting.
 - API requests do not use in-memory screener or quote caches.
 - API requests do not trigger a Finviz, technical, or quote refresh.
 - Startup initializes the SQLite schema but does not rebuild stock data.
-- Scheduled refreshes should run `scripts.update_stocks`, which rebuilds the
-  table and writes fresh Finviz quote fields into SQLite.
+- Scheduled refreshes should run `update_stocks`, which rebuilds the table and
+  writes fresh Finviz quote fields into SQLite.
 
 ## Data Sources
 
-- Fundamentals and initial screen: Finviz via `finvizfinance`
+- Fundamentals and initial screen: Finviz screener HTML, scraped directly
 - Potential-stock fields: Finviz Custom Screener fields `EPS Q/Q`, `Sales Q/Q`,
   `Oper M`, `Short Float`, `52W High`, and `Target Price`
 - Derived fundamental fields: `target_price_upside` is calculated from
   `(Target Price - Price) / Price` and can be used for sorting.
 - Top-level quote fields (`price`, `change`, `change_percent`, `volume`):
-  Finviz via `finvizfinance`
-- Technical price history: Yahoo Finance via `yfinance`
+  the same Finviz screener response
+- Technical price history: the Yahoo Finance chart API
+  (`/v8/finance/chart/{ticker}?range=1y&interval=1d`), using the adjusted close
+
+## Tests
+
+```bash
+cargo test
+```
+
+Unit tests live beside the code they cover; `tests/api.rs` drives the real
+router against a temporary SQLite file.
 
 ## Dokku
 
@@ -339,7 +362,7 @@ git push dokku main
 Server crontab refresh command:
 
 ```bash
-dokku run stock-screener uv run python -m scripts.update_stocks
+dokku run stock-screener update_stocks --limit 10000
 ```
 
 ## Docker
@@ -356,4 +379,4 @@ Run:
 docker run --rm -p 3000:3000 -v "$PWD/data:/app/data" stock-screener
 ```
 
-The container starts Gunicorn on `0.0.0.0:${PORT:-3000}`.
+The container serves on `0.0.0.0:${PORT:-3000}`.

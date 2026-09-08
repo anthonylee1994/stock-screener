@@ -1,20 +1,15 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
+# Rust build output
+/target
 
-# Virtual environments
-.venv
+# Environments
 .env
 .env.*
 
 # Local database files
 data/
+
 .idea
 .claude
 .mavis
 .opencode
-.pytest_cache
+.DS_Store

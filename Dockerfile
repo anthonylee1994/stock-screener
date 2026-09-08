@@ -1,18 +1,30 @@
-FROM ghcr.io/astral-sh/uv:python3.14-bookworm-slim
+FROM rust:1.95-bookworm AS builder
 
 WORKDIR /app
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
+# `rusqlite` bundles SQLite and `rustls` builds aws-lc-rs, both of which need a
+# C toolchain and cmake.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends cmake clang \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+RUN cargo build --release --locked --bins
 
-COPY . .
+FROM debian:bookworm-slim
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/target/release/stock-screener /usr/local/bin/stock-screener
+COPY --from=builder /app/target/release/update_stocks /usr/local/bin/update_stocks
+
 RUN mkdir -p /app/data && ln -s /app/data /data
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "uv run gunicorn --bind 0.0.0.0:${PORT:-3000} stock_screener.app:app"]
+CMD ["stock-screener"]
