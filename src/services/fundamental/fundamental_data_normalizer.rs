@@ -31,6 +31,9 @@ const COLUMN_ALIASES: &[(&str, &str)] = &[
     ("Float Short", "Short Interest"),
     ("Short Float", "Short Interest"),
     ("SMA200", "200-Day Simple Moving Average"),
+    // Finviz renamed the daily move column, and it arrives as a ratio because
+    // `number_covert` already divides the `%` away.
+    ("Change %", "Change"),
 ];
 
 pub fn canonical_column(header: &str) -> &str {
@@ -220,6 +223,17 @@ mod tests {
         assert_eq!(stock.high_52w, Some(-0.08));
         assert_eq!(stock.target_price, Some(250.5));
         assert_eq!(stock.target_price_upside, Some(0.2509));
+    }
+
+    #[test]
+    fn reads_the_daily_move_from_the_renamed_change_column() {
+        let row: FinvizRow = [("Change %".to_string(), FinvizCell::Number(Some(-0.0117)))]
+            .into_iter()
+            .collect();
+
+        let normalized = FundamentalDataNormalizer.normalize(vec![row]);
+
+        assert_eq!(normalized[0].change, Some(-0.0117));
     }
 
     #[test]

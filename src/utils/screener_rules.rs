@@ -5,6 +5,7 @@ pub const TOTAL_SCORE_COLUMN: &str = "Total Score";
 pub const FUNDAMENTAL_SCORE_COLUMN: &str = "Fundamental Score";
 pub const TECHNICAL_SCORE_COLUMN: &str = "Technical Score";
 pub const CHANGE_PERCENT_COLUMN: &str = "Change";
+pub const QUOTE_CHANGE_PERCENT_COLUMN: &str = "Quote Change Percent";
 pub const VOLUME_COLUMN: &str = "Volume";
 pub const POTENTIAL_STOCK_COLUMN: &str = "Potential Stock";
 pub const TARGET_PRICE_UPSIDE_COLUMN: &str = "Target Price Upside";

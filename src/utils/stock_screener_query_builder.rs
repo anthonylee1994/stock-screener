@@ -2,8 +2,9 @@
 
 use crate::models::SqlValue;
 use crate::utils::screener_rules::{
-    MARKET_CAP_COLUMN, MIN_VOLUME, POTENTIAL_STOCK_COLUMN, SEARCH_COLUMNS, TOTAL_SCORE_COLUMN,
-    VOLUME_COLUMN, market_cap_range, normalize_sort_value,
+    CHANGE_PERCENT_COLUMN, MARKET_CAP_COLUMN, MIN_VOLUME, POTENTIAL_STOCK_COLUMN,
+    QUOTE_CHANGE_PERCENT_COLUMN, SEARCH_COLUMNS, TOTAL_SCORE_COLUMN, VOLUME_COLUMN,
+    market_cap_range, normalize_sort_value,
 };
 use crate::utils::stock_schema::{
     STOCKS_COLUMNS, STOCKS_TABLE, quote_identifier, stocks_select_columns_sql,
@@ -223,7 +224,7 @@ impl StockScreenerQueryBuilder {
     ) -> Query {
         let order_column = self.normalize_sort_column(order);
         let direction = if ascend { "ASC" } else { "DESC" };
-        let quoted_order = quote_identifier(&order_column);
+        let quoted_order = sort_expression_sql(&order_column);
         let query = format!(
             "SELECT {} FROM \"{STOCKS_TABLE}\" WHERE {} \
              ORDER BY {quoted_order} IS NULL, {quoted_order} {direction}, \"Ticker\" ASC \
@@ -281,6 +282,19 @@ impl StockScreenerQueryBuilder {
     fn like_contains_value(&self, value: &str) -> String {
         format!("%{}%", escape_like_value(&value.to_lowercase()))
     }
+}
+
+/// The daily move is served as `Change` with the quote as a fallback, so the
+/// sort has to read the same value the API returns, not just the raw column.
+fn sort_expression_sql(column: &str) -> String {
+    if column == CHANGE_PERCENT_COLUMN {
+        return format!(
+            "COALESCE({}, {})",
+            quote_identifier(CHANGE_PERCENT_COLUMN),
+            quote_identifier(QUOTE_CHANGE_PERCENT_COLUMN)
+        );
+    }
+    quote_identifier(column)
 }
 
 fn is_stocks_column(column: &str) -> bool {
@@ -447,6 +461,28 @@ mod tests {
                 SqlValue::Integer(0)
             ]
         );
+    }
+
+    #[test]
+    fn sorts_the_change_percent_with_the_quote_fallback() {
+        let builder = StockScreenerQueryBuilder::default();
+
+        let (query, _) = builder.build_screener_query(
+            "All",
+            "+Large",
+            "",
+            "change_percent",
+            false,
+            10,
+            0,
+            false,
+            None,
+        );
+
+        assert!(query.contains(
+            "ORDER BY COALESCE(\"Change\", \"Quote Change Percent\") IS NULL, \
+             COALESCE(\"Change\", \"Quote Change Percent\") DESC, \"Ticker\" ASC"
+        ));
     }
 
     #[test]

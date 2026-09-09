@@ -71,6 +71,7 @@ pub const NUMBER_COL: &[&str] = &[
     "Rel Volume",
     "Price",
     "Change",
+    "Change %",
     "Volume",
     "Target Price",
 ];

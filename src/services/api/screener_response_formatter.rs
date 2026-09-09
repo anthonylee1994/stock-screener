@@ -139,11 +139,12 @@ fn format_technical(row: &StockRow) -> Value {
     })
 }
 
-/// Back out the absolute move from price and change percent, falling back to
+/// Back out the absolute move from price and the change ratio, falling back to
 /// the quote's own change.
 fn calculate_change(row: &StockRow) -> Option<f64> {
-    if let (Some(price), Some(change_percent)) = (row.price, row.change) {
-        let change_ratio = change_percent / 100.0;
+    if let (Some(price), Some(change_ratio)) = (row.price, row.change)
+        && change_ratio != -1.0
+    {
         let previous_price = price / (1.0 + change_ratio);
         return Some(price - previous_price);
     }
@@ -175,7 +176,7 @@ mod tests {
             sector: Some("Technology".to_string()),
             market_cap: Some(5_000_000_000_000.0),
             price: Some(110.0),
-            change: Some(10.0),
+            change: Some(0.1),
             volume: Some(2_000_000.0),
             total_score: Some(88.8),
             potential_stock: Some(true),
@@ -215,7 +216,7 @@ mod tests {
             quote_change: Some(4.0),
             quote_change_percent: Some(2.5),
             price: Some(110.0),
-            change: Some(10.0),
+            change: Some(0.1),
             ..StockRow::with_ticker("MSFT")
         };
 
@@ -223,7 +224,19 @@ mod tests {
 
         assert_eq!(record["price"], 110.0);
         assert!((record["change"].as_f64().unwrap() - 10.0).abs() < 1e-9);
-        assert_eq!(record["change_percent"], 10.0);
+        assert_eq!(record["change_percent"], 0.1);
+    }
+
+    #[test]
+    fn falls_back_to_the_quote_change_for_a_total_wipeout() {
+        let row = StockRow {
+            price: Some(0.0),
+            change: Some(-1.0),
+            quote_change: Some(-4.0),
+            ..StockRow::with_ticker("MSFT")
+        };
+
+        assert_eq!(format_record(&row)["change"], -4.0);
     }
 
     #[test]
